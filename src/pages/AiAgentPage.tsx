@@ -23,10 +23,23 @@ import {
   Layers,
   X,
   RefreshCw,
+  Brain,
+  Target,
+  BookmarkCheck,
+  Plus,
 } from 'lucide-react';
 import { useWorkspace, Account } from '../context/WorkspaceContext';
 import { apiFetch } from '../lib/api';
 import { Link } from 'react-router-dom';
+
+export interface LearnedMemory {
+  id: string;
+  category: 'USER_PREFERENCE' | 'FINANCIAL_RULE' | 'FINANCIAL_GOAL' | 'USER_HABIT' | 'PERSONAL_CONTEXT';
+  title: string;
+  fact: string;
+  actionableRule?: string;
+  createdAt: string;
+}
 
 interface Message {
   id: string;
@@ -38,8 +51,13 @@ interface Message {
     label: string;
     status: 'success' | 'running' | 'error';
   };
+  learnedMemory?: {
+    title: string;
+    fact: string;
+    category: string;
+  };
   actionCard?: {
-    type: 'transaction' | 'balance' | 'cashflow' | 'budget' | 'web_rag';
+    type: 'transaction' | 'balance' | 'cashflow' | 'budget' | 'web_rag' | 'memory_synthesis';
     data: any;
   };
 }
@@ -59,7 +77,7 @@ export const AiAgentPage: React.FC = () => {
       id: 'welcome-1',
       role: 'agent',
       content:
-        'Halo Mas Iman Azizi! Saya adalah **Nexa AI Agent**, asisten otonom keuangan Anda.\n\nSaya tidak hanya bisa menjawab pertanyaan finansial, tetapi juga dapat **mengeksekusi tindakan langsung** di workspace Anda:\n- ⚡ **Mencatat transaksi otomatis** (misal: *"Catat makan siang 35rb dari BCA"*)\n- 💳 **Cek saldo & portofolio kas real-time**\n- 📊 **Audit arus kas & ringkasan pengeluaran bulan ini**\n- 🌐 **Full Web & Google Economic Crawling** (misal: *"Crawl berita ekonomi inflasi"* atau *"Crawl website ... "*)\n- 🛡️ **Pemeriksaan status pagu anggaran (budget)**\n\nSilakan beri perintah atau tanyakan analisis keuangan Anda kapan saja!',
+        'Halo Mas Iman Azizi! Saya adalah **Nexa AI Agent**, asisten otonom keuangan Anda.\n\nSaya tidak hanya bisa menjawab pertanyaan finansial, tetapi juga **dapat belajar dari percakapan Anda dan mengolah seluruh informasi secara mendalam**:\n- 🧠 **Continuous Learning & Memory**: Saya mengingat target, kebiasaan, dan preferensi yang Anda ajarkan.\n- ⚡ **Pencatatan Transaksi Otomatis**: Misal: *"Catat makan siang 35rb dari BCA"*\n- 🌐 **Full Web & Google Economic Crawling**: Meneliti berita ekonomi & moneter terkini.\n- 📊 **Pengolahan Informasi Real-Time**: Evaluasi target terhadap saldo & arus kas riil Anda.\n\nSilakan beri perintah atau ajarkan target/aturan baru Anda kapan saja!',
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -76,6 +94,15 @@ export const AiAgentPage: React.FC = () => {
   const [crawlingModal, setCrawlingModal] = useState(false);
   const [crawlerResult, setCrawlerResult] = useState<any | null>(null);
 
+  // Memory & Learning Modal States
+  const [showMemoryModal, setShowMemoryModal] = useState(false);
+  const [memories, setMemories] = useState<LearnedMemory[]>([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
+  const [newMemoryCategory, setNewMemoryCategory] = useState<'FINANCIAL_GOAL' | 'FINANCIAL_RULE' | 'USER_PREFERENCE'>('FINANCIAL_GOAL');
+  const [newMemoryTitle, setNewMemoryTitle] = useState('');
+  const [newMemoryFact, setNewMemoryFact] = useState('');
+  const [addingMemory, setAddingMemory] = useState(false);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -83,6 +110,25 @@ export const AiAgentPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
+
+  const loadMemories = async () => {
+    if (!activeWorkspace) return;
+    setLoadingMemories(true);
+    try {
+      const res = await apiFetch(`/workspaces/${activeWorkspace.id}/ai/memories`);
+      if (res?.success) {
+        setMemories(res.memories || []);
+      }
+    } catch (err) {
+      console.warn('Failed to load memories:', err);
+    } finally {
+      setLoadingMemories(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMemories();
+  }, [activeWorkspace]);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -329,7 +375,54 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 3: CHECK SALDO & REKENING (Check Balances)
+    // AGENT INTENT 3: MEMORY & COGNITIVE PROGRESS SYNTHESIS QUERY
+    // ---------------------------------------------------------
+    const isMemorySynthesisIntent =
+      lower.includes('apa yang kamu pelajari') ||
+      lower.includes('kamu ingat apa') ||
+      lower.includes('ingat apa saja') ||
+      lower.includes('progress target') ||
+      lower.includes('target saya') ||
+      lower.includes('evaluasi target') ||
+      lower.includes('memori saya');
+
+    if (isMemorySynthesisIntent) {
+      setActiveTool('Cognitive Memory & Information Processing Engine');
+      await loadMemories();
+
+      const goals = memories.filter((m) => m.category === 'FINANCIAL_GOAL');
+      const rules = memories.filter((m) => m.category === 'FINANCIAL_RULE');
+      const prefs = memories.filter((m) => m.category === 'USER_PREFERENCE');
+
+      const agentMsg: Message = {
+        id: `agent-${Date.now()}`,
+        role: 'agent',
+        content: `🧠 **Sintesis Pemahaman & Pengolahan Informasi AI**\n\nSaya mengingat dan memantau seluruh instruksi, target, dan aturan yang telah Anda ajarkan:\n- 🎯 **Target Finansial Terpantau**: ${goals.length} target\n- ⚡ **Aturan Transaksi Kustom**: ${rules.length} aturan aktif\n- 💡 **Preferensi & Gaya Hidup**: ${prefs.length} catatan\n\nBerikut adalah evaluasi real-time antara target yang Anda tetapkan dengan likuiditas kas saat ini (**${formatRupiah(totalBalance)}**):`,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        toolExecuted: {
+          name: 'memory_synthesis',
+          label: 'Cognitive Memory & Information Synthesis Engine',
+          status: 'success',
+        },
+        actionCard: {
+          type: 'memory_synthesis',
+          data: {
+            goals,
+            rules,
+            prefs,
+            totalBalance,
+          },
+        },
+      };
+
+      setMessages((prev) => [...prev, agentMsg]);
+      setLoading(false);
+      setActiveTool(null);
+      return;
+    }
+
+    // ---------------------------------------------------------
+    // AGENT INTENT 4: CHECK SALDO & REKENING (Check Balances)
     // ---------------------------------------------------------
     const isBalanceIntent =
       lower.includes('saldo') ||
@@ -369,7 +462,7 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 4: AUDIT ARUS KAS & PENGELUARAN (Audit Cashflow)
+    // AGENT INTENT 5: AUDIT ARUS KAS & PENGELUARAN (Audit Cashflow)
     // ---------------------------------------------------------
     const isCashflowIntent =
       lower.includes('ringkas') ||
@@ -439,42 +532,9 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 5: CHECK BUDGETS (Monitor Anggaran)
+    // AGENT INTENT 6: GENERAL FINANCIAL CHAT & CONTINUOUS LEARNING VIA LLM
     // ---------------------------------------------------------
-    const isBudgetIntent =
-      lower.includes('budget') ||
-      lower.includes('anggaran') ||
-      lower.includes('pagu') ||
-      lower.includes('overbudget');
-
-    if (isBudgetIntent) {
-      setActiveTool('Budget Sentinel');
-      const agentMsg: Message = {
-        id: `agent-${Date.now()}`,
-        role: 'agent',
-        content: `⚡ **Pemantauan Pagu Anggaran (Budget Sentinel)**\n\nSeluruh alokasi anggaran bulanan Anda termonitor secara aktif. Sistem akan memperingatkan jika pengeluaran kategori mendekati ambang batas 85% atau 100%.`,
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        toolExecuted: {
-          name: 'check_budgets',
-          label: 'Budget Sentinel Guard',
-          status: 'success',
-        },
-        actionCard: {
-          type: 'budget',
-          data: {},
-        },
-      };
-
-      setMessages((prev) => [...prev, agentMsg]);
-      setLoading(false);
-      setActiveTool(null);
-      return;
-    }
-
-    // ---------------------------------------------------------
-    // AGENT INTENT 6: GENERAL FINANCIAL CHAT & ADVISORY VIA LLM
-    // ---------------------------------------------------------
-    setActiveTool('Nexa AI Reasoning Engine');
+    setActiveTool('Nexa AI Reasoning & Information Synthesis');
     try {
       const apiMessages = [
         ...messages.map((m) => ({
@@ -503,19 +563,25 @@ export const AiAgentPage: React.FC = () => {
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         toolExecuted: {
           name: 'llm_reasoning',
-          label: 'Gemini 2.5 & Groq Intelligence',
+          label: 'Gemini 2.5 Active Cognitive Reasoning',
           status: 'success',
         },
+        learnedMemory: res.learnedMemory || undefined,
       };
 
       setMessages((prev) => [...prev, agentMsg]);
+
+      // If a new memory was learned, refresh memories state
+      if (res.learnedMemory) {
+        await loadMemories();
+      }
     } catch {
       const agentMsg: Message = {
         id: `agent-${Date.now()}`,
         role: 'agent',
         content: `Berdasarkan data keuangan terkini di **${activeWorkspace.name}**:\n- **Total Likuiditas**: ${formatRupiah(
           totalBalance
-        )}\n- **Rekening Aktif**: ${accounts.map((a) => a.name).join(', ')}\n\nKondisi kas Anda siap untuk operasional harian. Anda dapat memberi perintah langsung seperti *"Catat beli kopi 25rb bayar bca"* atau *"Cek saldo BCA"* untuk mengeksekusi aksi instan.`,
+        )}\n- **Rekening Aktif**: ${accounts.map((a) => a.name).join(', ')}\n\nKondisi kas Anda siap untuk operasional harian. Anda dapat memberi perintah langsung seperti *"Catat beli kopi 25rb bayar bca"* atau ajarkan target baru seperti *"Target saya kumpulin 20 juta"*.`,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         toolExecuted: {
           name: 'local_intelligence',
@@ -556,13 +622,52 @@ export const AiAgentPage: React.FC = () => {
     }
   };
 
+  const handleAddMemory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemoryTitle.trim() || !newMemoryFact.trim() || !activeWorkspace || addingMemory) return;
+
+    setAddingMemory(true);
+    try {
+      const res = await apiFetch(`/workspaces/${activeWorkspace.id}/ai/memories`, {
+        method: 'POST',
+        body: JSON.stringify({
+          category: newMemoryCategory,
+          title: newMemoryTitle.trim(),
+          fact: newMemoryFact.trim(),
+        }),
+      });
+
+      if (res?.success) {
+        setNewMemoryTitle('');
+        setNewMemoryFact('');
+        await loadMemories();
+      }
+    } catch (err: any) {
+      alert(`Gagal menyimpan memori: ${err.message}`);
+    } finally {
+      setAddingMemory(false);
+    }
+  };
+
+  const handleDeleteMemory = async (memoryId: string) => {
+    if (!activeWorkspace) return;
+    try {
+      await apiFetch(`/workspaces/${activeWorkspace.id}/ai/memories?memoryId=${memoryId}`, {
+        method: 'DELETE',
+      });
+      await loadMemories();
+    } catch (err: any) {
+      alert(`Gagal menghapus memori: ${err.message}`);
+    }
+  };
+
   const clearChat = () => {
     setMessages([
       {
         id: `welcome-${Date.now()}`,
         role: 'agent',
         content:
-          'Riwayat percakapan telah dibersihkan. Saya siap menerima perintah dan pertanyaan finansial Anda selanjutnya, Mas Iman Azizi!',
+          'Riwayat percakapan telah dibersihkan. Saya tetap mengingat seluruh aturan dan target yang telah Anda ajarkan sebelumnya, Mas Iman Azizi!',
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
@@ -636,16 +741,43 @@ export const AiAgentPage: React.FC = () => {
                     boxShadow: '0 0 6px #10b981',
                   }}
                 />
-                Agent Online
+                Continuous Learning Active
               </span>
             </div>
             <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
-              Autonomous Financial Agent • Eksekusi transaksi, Google & Web RAG, & audit data riil
+              Belajar dari chat user • Pengolahan informasi target • Vektorisasi Neon pgvector
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Memory Modal Trigger */}
+          <button
+            onClick={() => {
+              loadMemories();
+              setShowMemoryModal(true);
+            }}
+            style={{
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              padding: '7px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#4f46e5',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+            }}
+            title="Buka basis memori dan pemahaman AI"
+          >
+            <Brain size={14} />
+            <span>Memori AI ({memories.length})</span>
+          </button>
+
+          {/* Web Crawler Modal Trigger */}
           <button
             onClick={() => setShowCrawlerModal(true)}
             style={{
@@ -706,12 +838,11 @@ export const AiAgentPage: React.FC = () => {
       {/* Suggested Quick Prompts */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
         {[
+          { label: '🧠 Cek Memori & Pemahaman AI', prompt: 'Apa saja yang sudah kamu pelajari tentang target dan kebiasaan saya?' },
+          { label: '🎯 Cek Progress Target Finansial', prompt: 'Bagaimana progress target tabungan dan dana darurat saya sekarang?' },
           { label: '🌐 Crawl Berita Ekonomi Google', prompt: 'Crawl berita ekonomi terkini tentang inflasi dan BI-Rate dari Google' },
-          { label: '🏛️ Crawl Kebijakan Bank Indonesia', prompt: 'Crawl kebijakan moneter dan suku bunga Bank Indonesia terbaru' },
           { label: '⚡ Cek Saldo & Portofolio', prompt: 'Berapa saldo dan portofolio saya sekarang?' },
           { label: '✍️ Catat Makan 35rb (BCA)', prompt: 'Catat pengeluaran makan siang 35rb dari BCA' },
-          { label: '📊 Ringkas Arus Kas Bulan Ini', prompt: 'Ringkas pengeluaran dan arus kas bulan ini' },
-          { label: '🛡️ Cek Status Anggaran', prompt: 'Cek status anggaran saya' },
         ].map((item, idx) => (
           <button
             key={idx}
@@ -803,6 +934,28 @@ export const AiAgentPage: React.FC = () => {
                   >
                     <Zap size={12} />
                     <span>Tool Eksekusi: {m.toolExecuted.label}</span>
+                  </div>
+                )}
+
+                {/* Newly Learned Memory Notification Badge */}
+                {m.learnedMemory && (
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'rgba(99, 102, 241, 0.1)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      padding: '3px 10px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      color: '#4f46e5',
+                      width: 'fit-content',
+                    }}
+                  >
+                    <Brain size={13} />
+                    <span>AI Mempelajari: &ldquo;{m.learnedMemory.title}&rdquo;</span>
                   </div>
                 )}
 
@@ -1027,7 +1180,114 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 3. Account Balances Card */}
+                    {/* 3. Memory & Cognitive Synthesis Card */}
+                    {m.actionCard.type === 'memory_synthesis' && (
+                      <div
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #6366f1',
+                          borderRadius: '10px',
+                          padding: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '14px',
+                          boxShadow: '0 2px 10px rgba(99, 102, 241, 0.12)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              color: '#312e81',
+                              fontWeight: 800,
+                              fontSize: '13.5px',
+                            }}
+                          >
+                            <Brain size={17} color="#4f46e5" /> Pengolahan Target & Memori Pengguna
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowMemoryModal(true)}
+                            style={{
+                              fontSize: '11.5px',
+                              fontWeight: 600,
+                              color: '#4f46e5',
+                              background: '#eef2ff',
+                              border: 'none',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Kelola Memori →
+                          </button>
+                        </div>
+
+                        {/* Goals with Progress Evaluation */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>
+                            🎯 Evaluasi Target vs Saldo Riil ({formatRupiah(m.actionCard.data.totalBalance)}):
+                          </div>
+                          {m.actionCard.data.goals?.length === 0 ? (
+                            <div style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>
+                              Belum ada target finansial yang diajarkan. Anda dapat mengetik &ldquo;Target saya kumpulin 20 juta&rdquo;.
+                            </div>
+                          ) : (
+                            m.actionCard.data.goals?.map((g: LearnedMemory, i: number) => {
+                              // extract nominal
+                              const matchNum = g.fact.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/i);
+                              const targetVal = matchNum ? parseFloat(matchNum[1].replace(',', '.')) * 1000000 : 20000000;
+                              const pct = Math.min(100, Math.round((m.actionCard.data.totalBalance / targetVal) * 100));
+
+                              return (
+                                <div
+                                  key={i}
+                                  style={{
+                                    padding: '10px 12px',
+                                    background: '#f8fafc',
+                                    borderRadius: '8px',
+                                    border: '1px solid #e2e8f0',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{g.title}</span>
+                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#4f46e5' }}>{pct}% Tercapai</span>
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>{g.fact}</div>
+                                  {/* Progress bar */}
+                                  <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div
+                                      style={{
+                                        width: `${pct}%`,
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, #6366f1, #3b82f6)',
+                                        borderRadius: '4px',
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        {/* Rules & Preferences */}
+                        {m.actionCard.data.rules?.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>⚡ Aturan Transaksi Kustom Aktif:</div>
+                            {m.actionCard.data.rules.map((r: LearnedMemory, i: number) => (
+                              <div key={i} style={{ fontSize: '12px', color: '#1e293b', background: '#f8fafc', padding: '6px 10px', borderRadius: '6px' }}>
+                                &bull; <strong>{r.title}</strong>: {r.actionableRule || r.fact}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 4. Account Balances Card */}
                     {m.actionCard.type === 'balance' && (
                       <div
                         style={{
@@ -1096,7 +1356,7 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 4. Cashflow Card */}
+                    {/* 5. Cashflow Card */}
                     {m.actionCard.type === 'cashflow' && (
                       <div
                         style={{
@@ -1141,7 +1401,7 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 5. Budget Card */}
+                    {/* 6. Budget Card */}
                     {m.actionCard.type === 'budget' && (
                       <div
                         style={{
@@ -1227,7 +1487,7 @@ export const AiAgentPage: React.FC = () => {
               >
                 <Zap size={14} className="animate-spin" color="#187aba" />
                 <span>
-                  {activeTool ? `Agent Tool aktif: ${activeTool}...` : 'Nexa AI Agent sedang menganalisis & mengeksekusi...'}
+                  {activeTool ? `Agent Tool aktif: ${activeTool}...` : 'Nexa AI Agent sedang menganalisis & memproses...'}
                 </span>
               </div>
             </div>
@@ -1253,7 +1513,7 @@ export const AiAgentPage: React.FC = () => {
           <input
             type="text"
             className="form-input"
-            placeholder="Ketik instruksi ke Agent (contoh: 'Crawl berita ekonomi inflasi dan BI', 'Catat beli bensin 30rb')..."
+            placeholder="Ketik instruksi ke Agent (contoh: 'Target saya kumpulin 20 juta', 'Crawl berita BI-Rate')..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
@@ -1282,6 +1542,219 @@ export const AiAgentPage: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {/* Memory & Continuous Learning Modal */}
+      {showMemoryModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 34, 68, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '680px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+              border: '1px solid #e2e8f0',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '18px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: 'rgba(99, 102, 241, 0.1)',
+                    color: '#4f46e5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Brain size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#002244' }}>
+                    Cognitive Memory & Pemahaman AI
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Hal-hal yang dipelajari AI dari percakapan Anda (Neon pgvector)
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowMemoryModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#94a3b8',
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Form: Ajarkan Hal Baru */}
+            <form
+              onSubmit={handleAddMemory}
+              style={{
+                background: '#f8fafc',
+                padding: '14px',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155' }}>
+                + Ajarkan Target / Aturan Baru ke AI
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '8px' }}>
+                <select
+                  className="form-select"
+                  value={newMemoryCategory}
+                  onChange={(e: any) => setNewMemoryCategory(e.target.value)}
+                  style={{ fontSize: '12px' }}
+                >
+                  <option value="FINANCIAL_GOAL">🎯 Target Finansial</option>
+                  <option value="FINANCIAL_RULE">⚡ Aturan Transaksi</option>
+                  <option value="USER_PREFERENCE">💡 Preferensi Kebiasaan</option>
+                </select>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Judul (contoh: Target Dana Darurat 20 Juta)"
+                  value={newMemoryTitle}
+                  onChange={(e) => setNewMemoryTitle(e.target.value)}
+                  required
+                  style={{ fontSize: '12px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Instruksi lengkap (contoh: Kumpulkan dana darurat 20jt di RDPU tahun ini)"
+                  value={newMemoryFact}
+                  onChange={(e) => setNewMemoryFact(e.target.value)}
+                  required
+                  style={{ fontSize: '12px' }}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={addingMemory || !newMemoryTitle.trim() || !newMemoryFact.trim()}
+                  style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
+                >
+                  {addingMemory ? 'Menyimpan...' : 'Ajarkan'}
+                </button>
+              </div>
+            </form>
+
+            {/* List of active learned memories */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#002244' }}>
+                  Daftar Memori Aktif ({memories.length})
+                </span>
+                {loadingMemories && <RefreshCw size={13} className="animate-spin" color="#187aba" />}
+              </div>
+
+              {memories.length === 0 ? (
+                <div style={{ padding: '24px', textAlign: 'center', fontSize: '12.5px', color: '#64748b', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
+                  Belum ada memori yang dipelajari. Chat AI seperti &ldquo;Target saya kumpulin 20 juta&rdquo; atau gunakan form di atas!
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                  {memories.map((m) => (
+                    <div
+                      key={m.id}
+                      style={{
+                        padding: '10px 12px',
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              background:
+                                m.category === 'FINANCIAL_GOAL'
+                                  ? '#dcfce7'
+                                  : m.category === 'FINANCIAL_RULE'
+                                  ? '#e0e7ff'
+                                  : '#fef3c7',
+                              color:
+                                m.category === 'FINANCIAL_GOAL'
+                                  ? '#166534'
+                                  : m.category === 'FINANCIAL_RULE'
+                                  ? '#3730a3'
+                                  : '#92400e',
+                            }}
+                          >
+                            {m.category}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{m.title}</span>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#475569' }}>{m.fact}</div>
+                        {m.actionableRule && (
+                          <div style={{ fontSize: '11px', color: '#4f46e5', fontStyle: 'italic' }}>
+                            ⚡ Aturan: {m.actionableRule}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteMemory(m.id)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#94a3b8',
+                          cursor: 'pointer',
+                          padding: '4px',
+                        }}
+                        title="Hapus memori ini"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* On-Demand Web Crawler Modal */}
       {showCrawlerModal && (
