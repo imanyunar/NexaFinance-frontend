@@ -16,6 +16,13 @@ import {
   ShieldCheck,
   CreditCard,
   PieChart,
+  Globe,
+  Search,
+  ExternalLink,
+  BookOpen,
+  Layers,
+  X,
+  RefreshCw,
 } from 'lucide-react';
 import { useWorkspace, Account } from '../context/WorkspaceContext';
 import { apiFetch } from '../lib/api';
@@ -32,7 +39,7 @@ interface Message {
     status: 'success' | 'running' | 'error';
   };
   actionCard?: {
-    type: 'transaction' | 'balance' | 'cashflow' | 'budget';
+    type: 'transaction' | 'balance' | 'cashflow' | 'budget' | 'web_rag';
     data: any;
   };
 }
@@ -52,7 +59,7 @@ export const AiAgentPage: React.FC = () => {
       id: 'welcome-1',
       role: 'agent',
       content:
-        'Halo Mas Iman Azizi! Saya adalah **Nexa AI Agent**, asisten otonom keuangan Anda.\n\nSaya tidak hanya bisa menjawab pertanyaan finansial, tetapi juga dapat **mengeksekusi tindakan langsung** di workspace Anda:\n- ⚡ **Mencatat transaksi otomatis** (misal: *"Catat makan siang 35rb dari BCA"*)\n- 💳 **Cek saldo & portofolio kas real-time**\n- 📊 **Audit arus kas & ringkasan pengeluaran bulan ini**\n- 🛡️ **Pemeriksaan status pagu anggaran (budget)**\n\nSilakan beri perintah atau tanyakan analisis keuangan Anda kapan saja!',
+        'Halo Mas Iman Azizi! Saya adalah **Nexa AI Agent**, asisten otonom keuangan Anda.\n\nSaya tidak hanya bisa menjawab pertanyaan finansial, tetapi juga dapat **mengeksekusi tindakan langsung** di workspace Anda:\n- ⚡ **Mencatat transaksi otomatis** (misal: *"Catat makan siang 35rb dari BCA"*)\n- 💳 **Cek saldo & portofolio kas real-time**\n- 📊 **Audit arus kas & ringkasan pengeluaran bulan ini**\n- 🌐 **Full Web & Google Economic Crawling** (misal: *"Crawl berita ekonomi inflasi"* atau *"Crawl website ... "*)\n- 🛡️ **Pemeriksaan status pagu anggaran (budget)**\n\nSilakan beri perintah atau tanyakan analisis keuangan Anda kapan saja!',
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -61,6 +68,13 @@ export const AiAgentPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Crawler Modal States
+  const [showCrawlerModal, setShowCrawlerModal] = useState(false);
+  const [modalTopic, setModalTopic] = useState('');
+  const [modalSource, setModalSource] = useState<'GOOGLE_WEB' | 'DIRECT_URL'>('GOOGLE_WEB');
+  const [crawlingModal, setCrawlingModal] = useState(false);
+  const [crawlerResult, setCrawlerResult] = useState<any | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -88,7 +102,6 @@ export const AiAgentPage: React.FC = () => {
       type = 'TRANSFER';
     }
 
-    // Extract amount
     let amount = 0;
     const rbMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:rb|k|ribu)/);
     const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/);
@@ -104,7 +117,6 @@ export const AiAgentPage: React.FC = () => {
       if (parsed > 0) amount = parsed;
     }
 
-    // Match account
     let matchedAccount = accounts[0];
     for (const acc of accounts) {
       const accNameLower = acc.name.toLowerCase();
@@ -114,7 +126,6 @@ export const AiAgentPage: React.FC = () => {
       else if (lower.includes(accNameLower)) matchedAccount = acc;
     }
 
-    // Clean description
     let description = text
       .replace(/catat(?:kan)?/gi, '')
       .replace(/pengeluaran/gi, '')
@@ -166,7 +177,6 @@ export const AiAgentPage: React.FC = () => {
       try {
         let parsedData: any = null;
 
-        // 1. Try remote NLP API first
         try {
           const nlpRes = await apiFetch(`/workspaces/${activeWorkspace.id}/ai/nlp`, {
             method: 'POST',
@@ -176,10 +186,9 @@ export const AiAgentPage: React.FC = () => {
             parsedData = nlpRes.parsed;
           }
         } catch {
-          // Remote NLP fallback to local parser
+          // fallback
         }
 
-        // 2. Fallback local parsing if needed
         if (!parsedData || !parsedData.amount) {
           const local = parseLocalTransaction(promptText);
           parsedData = {
@@ -192,7 +201,6 @@ export const AiAgentPage: React.FC = () => {
         }
 
         if (parsedData.amount > 0 && parsedData.accountId) {
-          // AUTONOMOUS AGENT ACTION: Execute transaction directly into database
           await createTransaction({
             type: parsedData.type || 'EXPENSE',
             amount: parsedData.amount,
@@ -245,7 +253,83 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 2: CHECK SALDO & REKENING (Check Balances)
+    // AGENT INTENT 2: ECONOMIC & FINANCIAL WEB/GOOGLE CRAWLER (RAG)
+    // ---------------------------------------------------------
+    const isCrawlIntent =
+      lower.includes('crawl') ||
+      lower.includes('crawling') ||
+      lower.includes('cari di google') ||
+      lower.includes('google berita') ||
+      lower.includes('berita ekonomi') ||
+      lower.includes('analisis ekonomi') ||
+      lower.startsWith('http://') ||
+      lower.startsWith('https://');
+
+    if (isCrawlIntent) {
+      setActiveTool('Google & Web Economic Crawler (Neon pgvector)');
+      try {
+        let crawlQuery = promptText
+          .replace(/tolong/gi, '')
+          .replace(/coba/gi, '')
+          .replace(/crawl(?:ing)?/gi, '')
+          .replace(/cari di google/gi, '')
+          .replace(/dari google/gi, '')
+          .replace(/tentang/gi, '')
+          .replace(/terbaru|terkini/gi, '')
+          .trim();
+
+        if (!crawlQuery || crawlQuery.length < 3) {
+          crawlQuery = 'kebijakan moneter dan ekonomi Indonesia';
+        }
+
+        const isDirectUrl = /^https?:\/\//i.test(promptText);
+
+        const res = await apiFetch(`/workspaces/${activeWorkspace.id}/rag/crawl`, {
+          method: 'POST',
+          body: JSON.stringify({
+            query: isDirectUrl ? promptText.trim() : crawlQuery,
+            source: isDirectUrl ? 'DIRECT_URL' : 'GOOGLE_WEB',
+            limit: 4,
+            crawlFullText: true,
+          }),
+        });
+
+        if (res?.success) {
+          const articles = res.articles || [];
+          const agentMsg: Message = {
+            id: `agent-${Date.now()}`,
+            role: 'agent',
+            content: `⚡ **Hasil Crawling Google & Web Ekonomi Berhasil Diindeks!**\n\nSaya telah meng-crawl **${res.crawledCount || articles.length} dokumen/artikel ekonomi** dan menyimpan **${res.totalChunksCount || articles.length} vektor semantik** ke dalam database Neon pgvector Anda.\n\nBerikut ringkasan dokumen yang berhasil diekstraksi secara real-time:`,
+            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            toolExecuted: {
+              name: 'google_web_crawler',
+              label: `Google Financial Crawler (${res.source || 'Web'})`,
+              status: 'success',
+            },
+            actionCard: {
+              type: 'web_rag',
+              data: {
+                query: crawlQuery,
+                source: res.source,
+                crawledCount: res.crawledCount,
+                totalChunksCount: res.totalChunksCount,
+                articles,
+              },
+            },
+          };
+
+          setMessages((prev) => [...prev, agentMsg]);
+          setLoading(false);
+          setActiveTool(null);
+          return;
+        }
+      } catch (err: any) {
+        console.error('Crawler execution error:', err);
+      }
+    }
+
+    // ---------------------------------------------------------
+    // AGENT INTENT 3: CHECK SALDO & REKENING (Check Balances)
     // ---------------------------------------------------------
     const isBalanceIntent =
       lower.includes('saldo') ||
@@ -253,7 +337,7 @@ export const AiAgentPage: React.FC = () => {
       lower.includes('portofolio') ||
       lower.includes('uang saya') ||
       lower.includes('kas tunai') ||
-      lower.includes('bca') && !isRecordIntent;
+      (lower.includes('bca') && !isRecordIntent);
 
     if (isBalanceIntent) {
       setActiveTool('Live Account Inspector');
@@ -285,7 +369,7 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 3: AUDIT ARUS KAS & PENGELUARAN (Audit Cashflow)
+    // AGENT INTENT 4: AUDIT ARUS KAS & PENGELUARAN (Audit Cashflow)
     // ---------------------------------------------------------
     const isCashflowIntent =
       lower.includes('ringkas') ||
@@ -355,7 +439,7 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 4: CHECK BUDGETS (Monitor Anggaran)
+    // AGENT INTENT 5: CHECK BUDGETS (Monitor Anggaran)
     // ---------------------------------------------------------
     const isBudgetIntent =
       lower.includes('budget') ||
@@ -388,11 +472,10 @@ export const AiAgentPage: React.FC = () => {
     }
 
     // ---------------------------------------------------------
-    // AGENT INTENT 5: GENERAL FINANCIAL CHAT & ADVISORY VIA LLM
+    // AGENT INTENT 6: GENERAL FINANCIAL CHAT & ADVISORY VIA LLM
     // ---------------------------------------------------------
     setActiveTool('Nexa AI Reasoning Engine');
     try {
-      // Map messages for chat API
       const apiMessages = [
         ...messages.map((m) => ({
           role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
@@ -427,7 +510,6 @@ export const AiAgentPage: React.FC = () => {
 
       setMessages((prev) => [...prev, agentMsg]);
     } catch {
-      // Offline fallback
       const agentMsg: Message = {
         id: `agent-${Date.now()}`,
         role: 'agent',
@@ -446,6 +528,31 @@ export const AiAgentPage: React.FC = () => {
     } finally {
       setLoading(false);
       setActiveTool(null);
+    }
+  };
+
+  const handleModalCrawl = async () => {
+    if (!modalTopic.trim() || !activeWorkspace || crawlingModal) return;
+    setCrawlingModal(true);
+    setCrawlerResult(null);
+
+    try {
+      const isDirectUrl = modalSource === 'DIRECT_URL' || /^https?:\/\//i.test(modalTopic);
+      const res = await apiFetch(`/workspaces/${activeWorkspace.id}/rag/crawl`, {
+        method: 'POST',
+        body: JSON.stringify({
+          query: modalTopic.trim(),
+          source: isDirectUrl ? 'DIRECT_URL' : 'GOOGLE_WEB',
+          limit: 5,
+          crawlFullText: true,
+        }),
+      });
+
+      setCrawlerResult(res);
+    } catch (err: any) {
+      setCrawlerResult({ error: err.message || 'Gagal melakukan crawling' });
+    } finally {
+      setCrawlingModal(false);
     }
   };
 
@@ -533,12 +640,34 @@ export const AiAgentPage: React.FC = () => {
               </span>
             </div>
             <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
-              Autonomous Financial Agent • Eksekusi transaksi, inspeksi kas, & audit data riil
+              Autonomous Financial Agent • Eksekusi transaksi, Google & Web RAG, & audit data riil
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={() => setShowCrawlerModal(true)}
+            style={{
+              background: 'rgba(24, 122, 186, 0.08)',
+              border: '1px solid rgba(24, 122, 186, 0.25)',
+              padding: '7px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#187aba',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease',
+            }}
+            title="Buka panel crawling web & Google ekonomi"
+          >
+            <Globe size={14} />
+            <span>Web Crawler</span>
+          </button>
+
           <div
             style={{
               textAlign: 'right',
@@ -551,6 +680,7 @@ export const AiAgentPage: React.FC = () => {
               {formatRupiah(totalBalance)}
             </div>
           </div>
+
           <button
             onClick={clearChat}
             style={{
@@ -576,11 +706,12 @@ export const AiAgentPage: React.FC = () => {
       {/* Suggested Quick Prompts */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
         {[
+          { label: '🌐 Crawl Berita Ekonomi Google', prompt: 'Crawl berita ekonomi terkini tentang inflasi dan BI-Rate dari Google' },
+          { label: '🏛️ Crawl Kebijakan Bank Indonesia', prompt: 'Crawl kebijakan moneter dan suku bunga Bank Indonesia terbaru' },
           { label: '⚡ Cek Saldo & Portofolio', prompt: 'Berapa saldo dan portofolio saya sekarang?' },
           { label: '✍️ Catat Makan 35rb (BCA)', prompt: 'Catat pengeluaran makan siang 35rb dari BCA' },
           { label: '📊 Ringkas Arus Kas Bulan Ini', prompt: 'Ringkas pengeluaran dan arus kas bulan ini' },
           { label: '🛡️ Cek Status Anggaran', prompt: 'Cek status anggaran saya' },
-          { label: '💡 Analisis Likuiditas Kas', prompt: 'Bagaimana kondisi likuiditas keuangan saya saat ini?' },
         ].map((item, idx) => (
           <button
             key={idx}
@@ -654,7 +785,6 @@ export const AiAgentPage: React.FC = () => {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                {/* Tool execution badge if present */}
                 {m.toolExecuted && (
                   <div
                     style={{
@@ -676,7 +806,6 @@ export const AiAgentPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Message Bubble */}
                 <div
                   style={{
                     background: m.role === 'user' ? 'linear-gradient(135deg, #187aba, #003061)' : '#ffffff',
@@ -787,7 +916,118 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 2. Account Balances Card */}
+                    {/* 2. Web & Google RAG Card */}
+                    {m.actionCard.type === 'web_rag' && (
+                      <div
+                        style={{
+                          background: '#ffffff',
+                          border: '1px solid #187aba',
+                          borderRadius: '10px',
+                          padding: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                          boxShadow: '0 2px 10px rgba(24, 122, 186, 0.12)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              color: '#002244',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                            }}
+                          >
+                            <Globe size={16} color="#187aba" /> Dokumen Ekonomi Terindeks (Neon pgvector)
+                          </span>
+                          <span
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: '#eff6ff',
+                              color: '#1d4ed8',
+                            }}
+                          >
+                            {m.actionCard.data.totalChunksCount || m.actionCard.data.articles?.length} Vector Chunks
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {m.actionCard.data.articles?.map((art: any, i: number) => (
+                            <div
+                              key={i}
+                              style={{
+                                padding: '10px 12px',
+                                background: '#f8fafc',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '4px',
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span
+                                  style={{
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    color: '#187aba',
+                                    background: '#e0f2fe',
+                                    padding: '1px 6px',
+                                    borderRadius: '4px',
+                                  }}
+                                >
+                                  {art.source || 'Google News'}
+                                </span>
+                                {art.category && (
+                                  <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: 600 }}>
+                                    {art.category}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>
+                                {art.title}
+                              </div>
+
+                              {art.snippet && (
+                                <p style={{ fontSize: '12px', color: '#475569', margin: '2px 0 4px', lineHeight: 1.45 }}>
+                                  {art.snippet.replace(/<[^>]+>/g, '').slice(0, 180)}...
+                                </p>
+                              )}
+
+                              {art.url && (
+                                <a
+                                  href={art.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    fontSize: '11.5px',
+                                    color: '#187aba',
+                                    fontWeight: 600,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    textDecoration: 'none',
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  <span>Buka Rujukan Asli</span>
+                                  <ExternalLink size={12} />
+                                </a>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Account Balances Card */}
                     {m.actionCard.type === 'balance' && (
                       <div
                         style={{
@@ -856,7 +1096,7 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 3. Cashflow Card */}
+                    {/* 4. Cashflow Card */}
                     {m.actionCard.type === 'cashflow' && (
                       <div
                         style={{
@@ -901,7 +1141,7 @@ export const AiAgentPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* 4. Budget Card */}
+                    {/* 5. Budget Card */}
                     {m.actionCard.type === 'budget' && (
                       <div
                         style={{
@@ -956,7 +1196,6 @@ export const AiAgentPage: React.FC = () => {
             </div>
           ))}
 
-          {/* Loading Indicator */}
           {loading && (
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <div
@@ -1014,7 +1253,7 @@ export const AiAgentPage: React.FC = () => {
           <input
             type="text"
             className="form-input"
-            placeholder="Ketik instruksi ke Agent (contoh: 'Catat beli bensin 30rb pakai BCA' atau 'Berapa saldo saya?')..."
+            placeholder="Ketik instruksi ke Agent (contoh: 'Crawl berita ekonomi inflasi dan BI', 'Catat beli bensin 30rb')..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
@@ -1043,6 +1282,198 @@ export const AiAgentPage: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {/* On-Demand Web Crawler Modal */}
+      {showCrawlerModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 34, 68, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '650px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+              border: '1px solid #e2e8f0',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: 'rgba(24, 122, 186, 0.1)',
+                    color: '#187aba',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Globe size={20} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#002244' }}>
+                    Google & Web Economic Crawler
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                    Crawl data ekonomi real-time dan vektorisasi ke Neon pgvector
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowCrawlerModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#94a3b8',
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setModalSource('GOOGLE_WEB')}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  border: modalSource === 'GOOGLE_WEB' ? '2px solid #187aba' : '1px solid #e2e8f0',
+                  background: modalSource === 'GOOGLE_WEB' ? '#f0f9ff' : '#ffffff',
+                  color: modalSource === 'GOOGLE_WEB' ? '#187aba' : '#64748b',
+                  cursor: 'pointer',
+                }}
+              >
+                🌐 Google Berita Ekonomi
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalSource('DIRECT_URL')}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  border: modalSource === 'DIRECT_URL' ? '2px solid #187aba' : '1px solid #e2e8f0',
+                  background: modalSource === 'DIRECT_URL' ? '#f0f9ff' : '#ffffff',
+                  color: modalSource === 'DIRECT_URL' ? '#187aba' : '#64748b',
+                  cursor: 'pointer',
+                }}
+              >
+                🔗 URL Website Spesifik
+              </button>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                {modalSource === 'GOOGLE_WEB' ? 'Topik Ekonomi / Kata Kunci' : 'Alamat URL Lengkap Website'}
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder={
+                    modalSource === 'GOOGLE_WEB'
+                      ? 'Contoh: Suku bunga acuan BI-Rate 2026, IHSG, Inflasi pangan...'
+                      : 'Contoh: https://www.bi.go.id/id/publikasi/kajian/Pages/KSK.aspx'
+                  }
+                  value={modalTopic}
+                  onChange={(e) => setModalTopic(e.target.value)}
+                  disabled={crawlingModal}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleModalCrawl}
+                  disabled={crawlingModal || !modalTopic.trim()}
+                  style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {crawlingModal ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
+                  <span>{crawlingModal ? 'Crawling...' : 'Mulai Crawl'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Results Display */}
+            {crawlerResult && (
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  padding: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+              >
+                {crawlerResult.error ? (
+                  <div style={{ color: '#dc2626', fontSize: '13px', fontWeight: 600 }}>
+                    ❌ {crawlerResult.error}
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <CheckCircle2 size={16} /> Berhasil di-crawl & diindeks ke Neon pgvector!
+                      </span>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#187aba' }}>
+                        {crawlerResult.totalChunksCount} Vektor Chunks
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '220px', overflowY: 'auto' }}>
+                      {crawlerResult.articles?.map((art: any, idx: number) => (
+                        <div
+                          key={idx}
+                          style={{
+                            padding: '8px 10px',
+                            background: '#ffffff',
+                            borderRadius: '6px',
+                            border: '1px solid #e2e8f0',
+                            fontSize: '12px',
+                          }}
+                        >
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{art.title}</div>
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                            Sumber: {art.source} &bull; Kategori: {art.category}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
