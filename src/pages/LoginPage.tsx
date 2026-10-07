@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, AlertCircle, ArrowRight, Lock, Mail, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginPage: React.FC = () => {
@@ -21,20 +21,7 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Email atau kata sandi tidak sesuai.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      await login('iman@nexafinance.com', 'password123');
-      navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Gagal login akun Iman Azizi.');
+      setError(err.message || 'Email atau kata sandi tidak cocok.');
     } finally {
       setLoading(false);
     }
@@ -154,50 +141,15 @@ export const LoginPage: React.FC = () => {
             type="submit"
             className="btn btn-primary"
             disabled={loading}
-            style={{ width: '100%', marginTop: '8px', padding: '11px', fontSize: '14px' }}
+            style={{ width: '100%', marginTop: '12px', padding: '11px', fontSize: '14px' }}
           >
             {loading ? 'Memverifikasi...' : 'Masuk ke Portal'}
             {!loading && <ArrowRight size={15} />}
           </button>
         </form>
 
-        {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0', gap: '12px' }}>
-          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
-          <span style={{ fontSize: '11.5px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            atau akses cepat
-          </span>
-          <div style={{ flex: 1, height: '1px', background: '#e2e8f0' }} />
-        </div>
-
-        {/* 1-Click Quick Login Button for Iman Azizi */}
-        <button
-          type="button"
-          onClick={handleQuickLogin}
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            border: '1px solid #bae6fd',
-            background: '#f0f9ff',
-            color: '#0369a1',
-            fontWeight: 600,
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <Sparkles size={15} style={{ color: '#0284c7' }} />
-          <span>Login Cepat: <strong>Iman Azizi</strong></span>
-        </button>
-
-        <div style={{ textAlign: 'center', marginTop: '22px', fontSize: '11.5px', color: '#94a3b8' }}>
-          Terkoneksi langsung ke Vercel Cloud & Neon Database
+        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '12px', color: '#94a3b8' }}>
+          Terkoneksi aman ke Nexa Institutional Cloud & Neon Database
         </div>
       </div>
     </div>
