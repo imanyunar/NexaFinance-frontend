@@ -1,5 +1,5 @@
 // API Client for NexaFinance
-import { getStoredToken } from './auth-storage';
+// Uses strictly HttpOnly Secure SameSite=None cookies (Zero localStorage token exposure)
 
 export const API_BASE = (() => {
   // If running locally, use relative path so Vite proxy handles it cleanly
@@ -15,18 +15,13 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_BASE}${cleanEndpoint}`;
 
-  const token = getStoredToken();
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
-  if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`;
-  }
-
   const response = await fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: 'include', // Automatically passes HttpOnly Secure cookie
     headers: {
       ...defaultHeaders,
       ...(options.headers as Record<string, string> || {}),

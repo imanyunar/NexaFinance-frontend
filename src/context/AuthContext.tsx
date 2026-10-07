@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../lib/api';
-import { 
-  AuthUser, 
-  getStoredToken, 
-  setStoredToken, 
-  getStoredUser, 
-  setStoredUser, 
-  clearAuthStorage 
-} from '../lib/auth-storage';
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  whatsappNumber?: string;
+  image?: string | null;
+}
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -20,31 +20,36 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  // Pure in-memory user state. No tokens are ever stored in localStorage!
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Clear any legacy localStorage tokens from previous sessions for safety
+  useEffect(() => {
+    try {
+      localStorage.removeItem('nexa_auth_token');
+      localStorage.removeItem('nexa_auth_user');
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const refreshSession = useCallback(async () => {
     try {
-      const token = getStoredToken();
-      if (!token && !user) {
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
+      // Validates session directly with the backend using the browser's HttpOnly cookie
       const res = await apiFetch('/auth/get-session');
       if (res?.user) {
         setUser(res.user);
-        setStoredUser(res.user);
-      } else if (!user) {
-        clearAuthStorage();
+      } else {
         setUser(null);
       }
-    } catch (err) {
-      console.warn('Session verification fallback:', err);
+    } catch {
+      setUser(null);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     refreshSession();
@@ -53,17 +58,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
+      // The browser receives Set-Cookie: __Secure-better-auth.session_token; HttpOnly; Secure; SameSite=None
       const data = await apiFetch('/auth/sign-in/email', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
 
-      if (data?.token) {
-        setStoredToken(data.token);
-      }
       if (data?.user) {
         setUser(data.user);
-        setStoredUser(data.user);
+      } else {
+        await refreshSession();
       }
     } finally {
       setLoading(false);
@@ -72,11 +76,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Tells the backend to destroy the session and clear the HttpOnly cookie
       await apiFetch('/auth/sign-out', { method: 'POST' });
     } catch {
       // ignore
     } finally {
-      clearAuthStorage();
       setUser(null);
       window.location.href = '/login';
     }
