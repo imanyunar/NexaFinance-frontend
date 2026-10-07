@@ -1,6 +1,7 @@
 // API Client for NexaFinance
+import { getStoredToken } from './auth-storage';
 
-const API_BASE = (() => {
+export const API_BASE = (() => {
   // If running locally, use relative path so Vite proxy handles it cleanly
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     return '/api';
@@ -14,9 +15,14 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_BASE}${cleanEndpoint}`;
 
+  const token = getStoredToken();
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   const response = await fetch(url, {
     ...options,

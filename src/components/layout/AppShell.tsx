@@ -14,13 +14,21 @@ import {
   Sparkles,
   ArrowUpRight,
   ArrowDownLeft,
-  ArrowLeftRight
+  ArrowLeftRight,
+  User,
+  LogOut
 } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useAuth } from '../../context/AuthContext';
+import { ProfileModal } from '../profile/ProfileModal';
 
 export const AppShell: React.FC = () => {
-  const { workspaces, activeWorkspace, totalBalance, loading, refreshData, createTransaction, accounts } = useWorkspace();
+  const { activeWorkspace, refreshData, createTransaction, accounts, loading } = useWorkspace();
+  const { user, logout } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const [txType, setTxType] = useState<'EXPENSE' | 'INCOME' | 'TRANSFER'>('EXPENSE');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -58,6 +66,15 @@ export const AppShell: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    : 'IA';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -137,7 +154,7 @@ export const AppShell: React.FC = () => {
           </div>
 
           {/* Right Header Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* WhatsApp Integration Status Indicator */}
             <div
               style={{
@@ -155,7 +172,7 @@ export const AppShell: React.FC = () => {
               title="Fonnte Inbound Bot Online on 085172247452"
             >
               <Smartphone size={13} />
-              <span>WA Bot Aktif (085172247452)</span>
+              <span>WA Bot Aktif</span>
               <span
                 style={{
                   width: '7px',
@@ -216,6 +233,116 @@ export const AppShell: React.FC = () => {
               <Plus size={15} />
               <span>Catat Transaksi</span>
             </button>
+
+            {/* User Profile Pill & Dropdown */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setShowDropdown(!showDropdown)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  padding: '5px 10px 5px 6px',
+                  borderRadius: '24px',
+                  cursor: 'pointer',
+                  color: '#ffffff',
+                }}
+              >
+                <div
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    background: '#187aba',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#ffffff',
+                  }}
+                >
+                  {initials}
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: 600 }}>{user?.name || 'Iman Azizi'}</span>
+                <ChevronDown size={14} style={{ color: '#94a3b8' }} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '110%',
+                    right: 0,
+                    width: '200px',
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                    border: '1px solid #e2e8f0',
+                    padding: '6px',
+                    zIndex: 50,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                  }}
+                  onClick={() => setShowDropdown(false)}
+                >
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '9px 12px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#0f172a',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <User size={15} style={{ color: '#187aba' }} />
+                    <span>Profil Pengguna</span>
+                  </button>
+
+                  <div style={{ height: '1px', background: '#f1f5f9', margin: '4px 0' }} />
+
+                  <button
+                    onClick={logout}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '9px 12px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#dc2626',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fef2f2')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LogOut size={15} style={{ color: '#dc2626' }} />
+                    <span>Keluar / Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -281,6 +408,9 @@ export const AppShell: React.FC = () => {
       <main style={{ flex: 1, maxWidth: '1360px', width: '100%', margin: '0 auto', padding: '28px 24px' }}>
         <Outlet />
       </main>
+
+      {/* Profile Modal */}
+      <ProfileModal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} />
 
       {/* Quick Add Transaction Modal */}
       {showAddModal && (
