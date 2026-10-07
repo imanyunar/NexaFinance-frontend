@@ -52,6 +52,11 @@ interface Message {
     label: string;
     status: 'success' | 'running' | 'error';
   };
+  sources?: Array<{
+    title: string;
+    uri: string;
+  }>;
+  isGrounded?: boolean;
   learnedMemory?: {
     title: string;
     fact: string;
@@ -535,7 +540,26 @@ export const AiAgentPage: React.FC = () => {
     // ---------------------------------------------------------
     // AGENT INTENT 6: GENERAL FINANCIAL CHAT & CONTINUOUS LEARNING VIA LLM
     // ---------------------------------------------------------
-    setActiveTool('Nexa AI Reasoning & Information Synthesis');
+    const isMarketOrRate =
+      lower.includes('rate dollar') ||
+      lower.includes('rate usd') ||
+      lower.includes('kurs') ||
+      lower.includes('dollar') ||
+      lower.includes('usd') ||
+      lower.includes('idr') ||
+      lower.includes('inflasi') ||
+      lower.includes('bi-rate') ||
+      lower.includes('bi rate') ||
+      lower.includes('suku bunga') ||
+      lower.includes('emas') ||
+      lower.includes('ihsg');
+
+    setActiveTool(
+      isMarketOrRate
+        ? 'Google Search Grounding & Interbank Spot FX'
+        : 'Nexa AI Reasoning & Information Synthesis'
+    );
+
     try {
       const apiMessages = [
         ...messages.map((m) => ({
@@ -562,11 +586,15 @@ export const AiAgentPage: React.FC = () => {
         role: 'agent',
         content: replyContent,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        toolExecuted: {
-          name: 'llm_reasoning',
-          label: 'Gemini 2.5 Active Cognitive Reasoning',
+        toolExecuted: res?.toolExecuted || {
+          name: res?.isGrounded ? 'google_search_grounding' : 'llm_reasoning',
+          label: res?.isGrounded
+            ? 'Google Search Grounding & Live Market Data'
+            : 'Gemini 2.5 Active Cognitive Reasoning',
           status: 'success',
         },
+        sources: res?.sources || [],
+        isGrounded: res?.isGrounded,
         learnedMemory: res.learnedMemory || undefined,
       };
 
@@ -788,6 +816,7 @@ export const AiAgentPage: React.FC = () => {
       {/* Suggested Quick Prompts (48px pill buttons) */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
         {[
+          { label: '💵 Cek Rate Dollar (USD/IDR)', prompt: 'Berapa rate dollar IDR sekarang di BCA dan pasar spot?' },
           { label: '🧠 Cek Memori & Pemahaman AI', prompt: 'Apa saja yang sudah kamu pelajari tentang target dan kebiasaan saya?' },
           { label: '🎯 Cek Progress Target Finansial', prompt: 'Bagaimana progress target tabungan dan dana darurat saya sekarang?' },
           { label: '🌐 Crawl Berita Ekonomi Google', prompt: 'Crawl berita ekonomi terkini tentang inflasi dan BI-Rate dari Google' },
@@ -905,6 +934,86 @@ export const AiAgentPage: React.FC = () => {
                 >
                   {m.content}
                 </div>
+
+                {/* Real-Time Grounding Sources (Google Search & Live Market Data) */}
+                {m.sources && m.sources.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: '4px',
+                      padding: '10px 14px',
+                      backgroundColor: '#f0f7ff',
+                      borderRadius: '14px',
+                      border: '1px solid #bae0fd',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        color: '#005caa',
+                        letterSpacing: '0.3px',
+                        fontFamily: "'Open Sans', sans-serif",
+                      }}
+                    >
+                      <GoogleIcon name="verified" size={15} color="#005caa" />
+                      <span>Sumber Rujukan Real-Time Terverifikasi (Google Grounding):</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {m.sources.map((src, sIdx) => {
+                        let displayHost = src.title || 'Sumber Web';
+                        try {
+                          if (src.uri) {
+                            const u = new URL(src.uri);
+                            displayHost = src.title || u.hostname.replace('www.', '');
+                          }
+                        } catch {
+                          // keep title
+                        }
+                        return (
+                          <a
+                            key={sIdx}
+                            href={src.uri}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              padding: '4px 10px',
+                              backgroundColor: '#ffffff',
+                              borderRadius: '48px',
+                              border: '1px solid #90cdf4',
+                              fontSize: '11.5px',
+                              color: '#005caa',
+                              textDecoration: 'none',
+                              fontWeight: 600,
+                              fontFamily: "'Open Sans', sans-serif",
+                              transition: 'all 0.15s ease',
+                              boxShadow: '0 1px 3px rgba(0, 92, 170, 0.08)',
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#005caa';
+                              e.currentTarget.style.backgroundColor = '#e8f2fa';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = '#90cdf4';
+                              e.currentTarget.style.backgroundColor = '#ffffff';
+                            }}
+                          >
+                            <ExternalLink size={12} />
+                            <span>{displayHost}</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Cards Rendered by Agent */}
                 {m.actionCard && (
