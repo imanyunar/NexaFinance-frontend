@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { CreditCard, Wallet, Landmark, Plus, ArrowUpRight } from 'lucide-react';
-import { useWorkspace, Account } from '../context/WorkspaceContext';
+import React from 'react';
+import { useWorkspace } from '../context/WorkspaceContext';
+import { Card, Badge, GoogleIcon } from '../components/ui';
 
 export const AccountsPage: React.FC = () => {
   const { accounts, totalBalance } = useWorkspace();
@@ -16,71 +16,80 @@ export const AccountsPage: React.FC = () => {
   const getAccountIcon = (type: string) => {
     switch (type) {
       case 'BANK':
-        return <Landmark size={20} />;
+        return 'account_balance';
       case 'CASH':
-        return <Wallet size={20} />;
+        return 'payments';
       default:
-        return <CreditCard size={20} />;
+        return 'credit_card';
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>Rekening & Dompet Kas</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+            Rekening & Dompet Kas
+          </h1>
+          <p style={{ color: '#666666', fontSize: '14px', margin: '4px 0 0' }}>
             Daftar rekening bank, e-wallet, kas tunai, dan pos tabungan Anda
           </p>
         </div>
+        <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e5e5', borderRadius: '48px', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <GoogleIcon name="account_balance_wallet" size={18} color="#005caa" />
+          <span style={{ fontSize: '13px', color: '#666666' }}>Total Saldo:</span>
+          <strong style={{ fontSize: '15px', color: '#005caa', fontFamily: "'Open Sans', sans-serif" }}>
+            {formatRupiah(totalBalance)}
+          </strong>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
         {accounts.map((acc) => (
-          <div key={acc.id} className="card">
+          <Card key={acc.id} padding="24px">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
               <div
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  background: 'rgba(24, 122, 186, 0.1)',
-                  color: acc.color || '#187aba',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '14px',
+                  backgroundColor: '#e8f2fa',
+                  color: '#005caa',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                {getAccountIcon(acc.type)}
+                <GoogleIcon name={getAccountIcon(acc.type)} size={22} color="#005caa" />
               </div>
-              <span
-                style={{
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  background: '#f1f5f9',
-                  color: '#475569',
-                  textTransform: 'uppercase',
-                }}
-              >
+              <Badge variant="neutral">
                 {acc.type}
-              </span>
+              </Badge>
             </div>
 
-            <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
               {acc.name}
             </h3>
-            
-            <div style={{ fontSize: '22px', fontWeight: 800, color: '#002244', marginTop: '10px' }}>
+
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#005caa', marginTop: '10px', fontFamily: "'Open Sans', sans-serif" }}>
               {formatRupiah(acc.balance)}
             </div>
 
-            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+            <div
+              style={{
+                marginTop: '16px',
+                paddingTop: '12px',
+                borderTop: '1px solid #f0f0f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '12.5px',
+                color: '#666666',
+              }}
+            >
               <span>Saldo Awal:</span>
-              <span>{formatRupiah(acc.openingBalance || 0)}</span>
+              <span style={{ fontWeight: 600 }}>{formatRupiah(acc.openingBalance || 0)}</span>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

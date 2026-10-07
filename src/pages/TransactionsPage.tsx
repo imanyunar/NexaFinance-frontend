@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  Search, 
-  Trash2, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  ArrowLeftRight,
-  Filter,
-  Download
-} from 'lucide-react';
 import { useWorkspace, Transaction } from '../context/WorkspaceContext';
+import { Card, Badge, GoogleIcon, Input } from '../components/ui';
 
 export const TransactionsPage: React.FC = () => {
   const { transactions, deleteTransaction, loading } = useWorkspace();
@@ -43,20 +35,22 @@ export const TransactionsPage: React.FC = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>Buku Transaksi</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>
-            Seluruh mutasi keuangan dari WhatsApp dan web portal
+          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+            Buku Transaksi
+          </h1>
+          <p style={{ color: '#666666', fontSize: '14px', margin: '4px 0 0' }}>
+            Seluruh mutasi keuangan tercatat dari WhatsApp bot dan web portal
           </p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="card" style={{ padding: '16px 20px' }}>
+      <Card padding="16px 24px">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: '6px' }}>
+          {/* Tabs (Pills with 48px radius) */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {[
-              { id: 'ALL', label: 'Semua' },
+              { id: 'ALL', label: 'Semua Transaksi' },
               { id: 'EXPENSE', label: 'Pengeluaran' },
               { id: 'INCOME', label: 'Pemasukan' },
               { id: 'TRANSFER', label: 'Transfer' },
@@ -65,16 +59,17 @@ export const TransactionsPage: React.FC = () => {
                 key={tab.id}
                 onClick={() => setFilterType(tab.id)}
                 style={{
-                  padding: '7px 14px',
-                  borderRadius: '8px',
+                  padding: '8px 18px',
+                  borderRadius: '48px',
                   border: '1px solid',
-                  borderColor: filterType === tab.id ? '#187aba' : '#e2e8f0',
-                  background: filterType === tab.id ? '#187aba' : '#ffffff',
-                  color: filterType === tab.id ? '#ffffff' : '#475569',
+                  borderColor: filterType === tab.id ? '#005caa' : '#e5e5e5',
+                  backgroundColor: filterType === tab.id ? '#005caa' : '#ffffff',
+                  color: filterType === tab.id ? '#ffffff' : '#666666',
                   fontWeight: 600,
                   fontSize: '13px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
+                  fontFamily: "'Open Sans', sans-serif",
                 }}
               >
                 {tab.label}
@@ -83,113 +78,143 @@ export const TransactionsPage: React.FC = () => {
           </div>
 
           {/* Search Input */}
-          <div style={{ position: 'relative', width: '280px' }}>
-            <Search
-              size={15}
-              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-            />
-            <input
+          <div style={{ width: '280px' }}>
+            <Input
               type="text"
               placeholder="Cari transaksi / rekening..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="form-input"
-              style={{ paddingLeft: '34px', fontSize: '13.5px' }}
+              googleIcon="search"
+              style={{ marginBottom: 0 }}
             />
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Table */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th>Tipe</th>
-                <th>Tanggal</th>
-                <th>Deskripsi</th>
-                <th>Rekening</th>
-                <th>Kategori</th>
-                <th style={{ textAlign: 'right' }}>Nominal</th>
-                <th style={{ width: '60px', textAlign: 'center' }}>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#94a3b8' }}>
-                    Tidak ada transaksi yang cocok.
-                  </td>
+      {/* Transactions List */}
+      <Card padding="0">
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '48px 24px', color: '#666666' }}>
+            <GoogleIcon name="receipt_long" size={36} color="#005caa" />
+            <p style={{ marginTop: '12px', fontSize: '14px' }}>Tidak ada transaksi yang cocok dengan filter.</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e5e5e5', backgroundColor: '#f8fafc', color: '#666666' }}>
+                  <th style={{ padding: '14px 20px', fontWeight: 600 }}>Tipe & Deskripsi</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 600 }}>Kategori</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 600 }}>Rekening</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 600 }}>Tanggal</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 600, textAlign: 'right' }}>Nominal</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 600, textAlign: 'center' }}>Aksi</th>
                 </tr>
-              ) : (
-                filtered.map((tx) => {
+              </thead>
+              <tbody>
+                {filtered.map((tx) => {
                   const isExpense = tx.type === 'EXPENSE';
                   const isIncome = tx.type === 'INCOME';
+
                   return (
-                    <tr key={tx.id}>
-                      <td>
-                        <span
-                          className={`badge ${
-                            isExpense ? 'badge-red' : isIncome ? 'badge-green' : 'badge-blue'
-                          }`}
-                        >
-                          {isExpense ? 'Pengeluaran' : isIncome ? 'Pemasukan' : 'Transfer'}
-                        </span>
+                    <tr
+                      key={tx.id}
+                      style={{
+                        borderBottom: '1px solid #f0f0f0',
+                        transition: 'background-color 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <td style={{ padding: '14px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              backgroundColor: isExpense ? '#fce8e6' : isIncome ? '#e6f4ea' : '#e8f2fa',
+                              color: isExpense ? '#c5221f' : isIncome ? '#137333' : '#005caa',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <GoogleIcon
+                              name={isExpense ? 'arrow_outward' : isIncome ? 'south_west' : 'swap_horiz'}
+                              size={18}
+                              color={isExpense ? '#c5221f' : isIncome ? '#137333' : '#005caa'}
+                            />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, color: '#000000' }}>{tx.description}</div>
+                            {tx.destinationAccount && (
+                              <div style={{ fontSize: '12px', color: '#666666' }}>
+                                Ke: {tx.destinationAccount.name}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
-                      <td style={{ color: '#64748b', fontSize: '13px', whiteSpace: 'nowrap' }}>
+
+                      <td style={{ padding: '14px 20px' }}>
+                        <Badge variant="neutral">
+                          {tx.category?.name || 'Umum'}
+                        </Badge>
+                      </td>
+
+                      <td style={{ padding: '14px 20px', color: '#666666' }}>
+                        {tx.sourceAccount?.name || '-'}
+                      </td>
+
+                      <td style={{ padding: '14px 20px', color: '#666666', fontSize: '13px' }}>
                         {new Date(tx.date).toLocaleDateString('id-ID', {
-                          day: '2-digit',
+                          day: 'numeric',
                           month: 'short',
                           year: 'numeric',
                         })}
                       </td>
-                      <td style={{ fontWeight: 600, color: '#0f172a' }}>{tx.description}</td>
-                      <td style={{ color: '#475569', fontSize: '13.5px' }}>
-                        {tx.sourceAccount?.name || 'Rekening'}
-                      </td>
-                      <td>
-                        <span style={{ fontSize: '12.5px', color: '#64748b' }}>
-                          {tx.category?.name || 'Umum'}
-                        </span>
-                      </td>
+
                       <td
                         style={{
+                          padding: '14px 20px',
                           textAlign: 'right',
                           fontWeight: 700,
                           fontSize: '14.5px',
-                          color: isExpense ? '#c62234' : isIncome ? '#10874e' : '#187aba',
-                          whiteSpace: 'nowrap',
+                          color: isExpense ? '#c5221f' : isIncome ? '#137333' : '#005caa',
+                          fontFamily: "'Open Sans', sans-serif",
                         }}
                       >
-                        {isExpense ? '-' : isIncome ? '+' : ''} {formatRupiah(tx.amount)}
+                        {isExpense ? '-' : isIncome ? '+' : ''}
+                        {formatRupiah(Number(tx.amount))}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+
+                      <td style={{ padding: '14px 20px', textAlign: 'center' }}>
                         <button
                           onClick={() => handleDelete(tx.id, tx.description)}
                           style={{
                             background: 'transparent',
                             border: 'none',
-                            color: '#94a3b8',
                             cursor: 'pointer',
-                            padding: '4px',
-                            borderRadius: '4px',
+                            color: '#c5221f',
+                            padding: '6px',
+                            borderRadius: '50%',
+                            transition: 'background-color 0.15s ease',
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#c62234')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-                          title="Hapus Transaksi"
+                          title="Hapus transaksi"
                         >
-                          <Trash2 size={15} />
+                          <GoogleIcon name="delete" size={18} color="#c5221f" />
                         </button>
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

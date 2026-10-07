@@ -31,6 +31,7 @@ import {
 import { useWorkspace, Account } from '../context/WorkspaceContext';
 import { apiFetch } from '../lib/api';
 import { Link } from 'react-router-dom';
+import { Button, Card, Badge, Modal, Input, GoogleIcon } from '../components/ui';
 
 export interface LearnedMemory {
   id: string;
@@ -685,157 +686,106 @@ export const AiAgentPage: React.FC = () => {
         gap: '12px',
       }}
     >
-      {/* Header Banner */}
+      {/* Header Banner (BCA Design System Card) */}
       <div
+        className="card"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: '#ffffff',
-          padding: '14px 20px',
-          borderRadius: '12px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          backgroundColor: '#ffffff',
+          padding: '16px 24px',
+          borderRadius: '24px',
+          border: '1px solid #e5e5e5',
+          boxShadow: 'rgba(112, 144, 176, 0.1) 0px 0px 40px 8px',
+          gap: '16px',
+          flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #002244, #187aba)',
-              color: '#38bdf8',
+              width: '44px',
+              height: '44px',
+              borderRadius: '16px',
+              backgroundColor: '#005caa',
+              color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 10px rgba(24, 122, 186, 0.3)',
+              boxShadow: '0 4px 12px rgba(0, 92, 170, 0.25)',
+              flexShrink: 0,
             }}
           >
-            <Bot size={22} />
+            <GoogleIcon name="smart_toy" size={24} color="#ffffff" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#002244' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
                 Nexa AI Agent
               </h1>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  color: '#059669',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                }}
-              >
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    background: '#10b981',
-                    borderRadius: '50%',
-                    boxShadow: '0 0 6px #10b981',
-                  }}
-                />
+              <Badge variant="success" googleIcon="psychology" size="sm">
                 Continuous Learning Active
-              </span>
+              </Badge>
             </div>
-            <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', marginTop: '2px' }}>
-              Belajar dari chat user • Pengolahan informasi target • Vektorisasi Neon pgvector
+            <p style={{ margin: 0, fontSize: '13px', color: '#666666', marginTop: '2px' }}>
+              Belajar dari chat user • Pengolahan target & saldo • Neon pgvector
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {/* Memory Modal Trigger */}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
+            googleIcon="memory"
             onClick={() => {
               loadMemories();
               setShowMemoryModal(true);
             }}
-            style={{
-              background: 'rgba(99, 102, 241, 0.08)',
-              border: '1px solid rgba(99, 102, 241, 0.25)',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: '#4f46e5',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.15s ease',
-            }}
             title="Buka basis memori dan pemahaman AI"
           >
-            <Brain size={14} />
-            <span>Memori AI ({memories.length})</span>
-          </button>
+            Memori AI ({memories.length})
+          </Button>
 
           {/* Web Crawler Modal Trigger */}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
+            googleIcon="travel_explore"
             onClick={() => setShowCrawlerModal(true)}
-            style={{
-              background: 'rgba(24, 122, 186, 0.08)',
-              border: '1px solid rgba(24, 122, 186, 0.25)',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: '#187aba',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.15s ease',
-            }}
             title="Buka panel crawling web & Google ekonomi"
           >
-            <Globe size={14} />
-            <span>Web Crawler</span>
-          </button>
+            Web Crawler
+          </Button>
 
           <div
             style={{
               textAlign: 'right',
               paddingRight: '12px',
-              borderRight: '1px solid #e2e8f0',
+              borderRight: '1px solid #e5e5e5',
             }}
           >
-            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Total Likuiditas</div>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: '#002244' }}>
+            <div style={{ fontSize: '11px', color: '#666666', fontWeight: 600 }}>Total Likuiditas</div>
+            <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#005caa', fontFamily: "'Open Sans', sans-serif" }}>
               {formatRupiah(totalBalance)}
             </div>
           </div>
 
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            googleIcon="delete"
             onClick={clearChat}
-            style={{
-              background: 'transparent',
-              border: '1px solid #e2e8f0',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              color: '#64748b',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
             title="Bersihkan riwayat percakapan"
           >
-            <Trash2 size={13} />
-            <span>Reset</span>
-          </button>
+            Reset
+          </Button>
         </div>
       </div>
 
-      {/* Suggested Quick Prompts */}
+      {/* Suggested Quick Prompts (48px pill buttons) */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
         {[
           { label: '🧠 Cek Memori & Pemahaman AI', prompt: 'Apa saja yang sudah kamu pelajari tentang target dan kebiasaan saya?' },
@@ -849,22 +799,31 @@ export const AiAgentPage: React.FC = () => {
             onClick={() => handleSend(item.prompt)}
             disabled={loading}
             style={{
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              padding: '6px 12px',
-              borderRadius: '16px',
-              fontSize: '12px',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e5e5e5',
+              padding: '7px 16px',
+              borderRadius: '48px',
+              fontSize: '12.5px',
               fontWeight: 600,
-              color: '#334155',
+              color: '#000000',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               transition: 'all 0.15s ease',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
+              fontFamily: "'Open Sans', sans-serif",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.borderColor = '#187aba')}
-            onMouseOut={(e) => (e.currentTarget.style.borderColor = '#cbd5e1')}
+            onMouseOver={(e) => {
+              e.currentTarget.style.borderColor = '#005caa';
+              e.currentTarget.style.color = '#005caa';
+              e.currentTarget.style.backgroundColor = '#e8f2fa';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.borderColor = '#e5e5e5';
+              e.currentTarget.style.color = '#000000';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+            }}
           >
             <span>{item.label}</span>
           </button>
@@ -878,14 +837,15 @@ export const AiAgentPage: React.FC = () => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          padding: '16px 20px',
+          padding: '24px',
           overflowY: 'auto',
-          background: '#f8fafd',
-          border: '1px solid #e2e8f0',
-          borderRadius: '12px',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e5e5e5',
+          borderRadius: '24px',
+          boxShadow: 'rgba(112, 144, 176, 0.1) 0px 0px 40px 8px',
         }}
       >
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {messages.map((m) => (
             <div
               key={m.id}
@@ -899,77 +859,48 @@ export const AiAgentPage: React.FC = () => {
               {m.role === 'agent' && (
                 <div
                   style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '10px',
-                    background: '#002244',
-                    color: '#38bdf8',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    backgroundColor: '#005caa',
+                    color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(0, 34, 68, 0.25)',
+                    boxShadow: '0 2px 8px rgba(0, 92, 170, 0.25)',
                   }}
                 >
-                  <Bot size={18} />
+                  <GoogleIcon name="smart_toy" size={20} color="#ffffff" />
                 </div>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                 {m.toolExecuted && (
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: 'rgba(24, 122, 186, 0.1)',
-                      border: '1px solid rgba(24, 122, 186, 0.2)',
-                      padding: '2px 8px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      color: '#187aba',
-                      width: 'fit-content',
-                    }}
-                  >
-                    <Zap size={12} />
-                    <span>Tool Eksekusi: {m.toolExecuted.label}</span>
-                  </div>
+                  <Badge variant="primary" googleIcon="bolt" size="sm" style={{ width: 'fit-content' }}>
+                    Tool Eksekusi: {m.toolExecuted.label}
+                  </Badge>
                 )}
 
                 {/* Newly Learned Memory Notification Badge */}
                 {m.learnedMemory && (
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      background: 'rgba(99, 102, 241, 0.1)',
-                      border: '1px solid rgba(99, 102, 241, 0.3)',
-                      padding: '3px 10px',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      fontWeight: 700,
-                      color: '#4f46e5',
-                      width: 'fit-content',
-                    }}
-                  >
-                    <Brain size={13} />
-                    <span>AI Mempelajari: &ldquo;{m.learnedMemory.title}&rdquo;</span>
-                  </div>
+                  <Badge variant="primary" googleIcon="psychology" size="sm" style={{ width: 'fit-content' }}>
+                    AI Mempelajari: &ldquo;{m.learnedMemory.title}&rdquo;
+                  </Badge>
                 )}
 
                 <div
                   style={{
-                    background: m.role === 'user' ? 'linear-gradient(135deg, #187aba, #003061)' : '#ffffff',
-                    color: m.role === 'user' ? '#ffffff' : '#0f172a',
-                    border: m.role === 'user' ? 'none' : '1px solid #e2e8f0',
-                    padding: '12px 16px',
-                    borderRadius: m.role === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                    fontSize: '13.5px',
+                    backgroundColor: m.role === 'user' ? '#005caa' : '#f8fafc',
+                    color: m.role === 'user' ? '#ffffff' : '#000000',
+                    border: m.role === 'user' ? 'none' : '1px solid #e5e5e5',
+                    padding: '14px 18px',
+                    borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                    fontSize: '14px',
                     lineHeight: 1.6,
-                    boxShadow: m.role === 'user' ? '0 2px 8px rgba(24, 122, 186, 0.25)' : '0 1px 4px rgba(0,0,0,0.04)',
+                    boxShadow: m.role === 'user' ? '0 2px 8px rgba(0, 92, 170, 0.2)' : 'rgba(112, 144, 176, 0.08) 0px 2px 10px 0px',
                     whiteSpace: 'pre-wrap',
+                    fontFamily: 'ui-sans-serif, system-ui, sans-serif',
                   }}
                 >
                   {m.content}
@@ -1492,11 +1423,9 @@ export const AiAgentPage: React.FC = () => {
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
-
-        {/* Input Bar */}
+        {/* Input Bar (48px Pill Container) */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -1504,449 +1433,356 @@ export const AiAgentPage: React.FC = () => {
           }}
           style={{
             display: 'flex',
-            gap: '10px',
+            alignItems: 'center',
+            gap: '8px',
             marginTop: '16px',
-            borderTop: '1px solid #e2e8f0',
-            paddingTop: '14px',
+            padding: '4px 6px 4px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #e5e5e5',
+            borderRadius: '48px',
+            boxShadow: 'rgba(112, 144, 176, 0.08) 0px 2px 8px 0px',
+            transition: 'border-color 0.15s ease',
           }}
         >
           <input
             type="text"
-            className="form-input"
             placeholder="Ketik instruksi ke Agent (contoh: 'Target saya kumpulin 20 juta', 'Crawl berita BI-Rate')..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
             style={{
-              padding: '12px 16px',
+              flex: 1,
+              border: 'none',
+              outline: 'none',
               fontSize: '14px',
-              borderRadius: '10px',
-              border: '1px solid #cbd5e1',
+              backgroundColor: 'transparent',
+              color: '#000000',
+              fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+              padding: '8px 0',
             }}
           />
-          <button
+          <Button
             type="submit"
-            className="btn btn-primary"
+            variant="primary"
+            size="md"
+            googleIcon="send"
             disabled={loading || !input.trim()}
-            style={{
-              padding: '0 20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              borderRadius: '10px',
-              fontWeight: 600,
-            }}
+            style={{ borderRadius: '48px', padding: '8px 22px' }}
           >
-            <Send size={15} />
-            <span>Kirim</span>
-          </button>
+            Kirim
+          </Button>
         </form>
       </div>
 
-      {/* Memory & Continuous Learning Modal */}
-      {showMemoryModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 34, 68, 0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-          }}
-        >
-          <div
+      {/* Memory & Continuous Learning Modal (Reusable Modal) */}
+      <Modal
+        isOpen={showMemoryModal}
+        onClose={() => setShowMemoryModal(false)}
+        title="Cognitive Memory & Pemahaman AI"
+        subtitle="Hal-hal yang dipelajari AI dari percakapan Anda (Neon pgvector)"
+        googleIcon="psychology"
+        maxWidth={680}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {/* Form: Ajarkan Hal Baru */}
+          <form
+            onSubmit={handleAddMemory}
             style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '680px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-              border: '1px solid #e2e8f0',
-              padding: '24px',
+              backgroundColor: '#f8fafc',
+              padding: '16px',
+              borderRadius: '18px',
+              border: '1px solid #e5e5e5',
               display: 'flex',
               flexDirection: 'column',
-              gap: '18px',
+              gap: '12px',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    background: 'rgba(99, 102, 241, 0.1)',
-                    color: '#4f46e5',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Brain size={20} />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#002244' }}>
-                    Cognitive Memory & Pemahaman AI
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                    Hal-hal yang dipelajari AI dari percakapan Anda (Neon pgvector)
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowMemoryModal(false)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#94a3b8',
-                }}
+            <div style={{ fontSize: '13px', fontWeight: 700, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+              + Ajarkan Target / Aturan Baru ke AI
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '8px' }}>
+              <select
+                className="form-select"
+                value={newMemoryCategory}
+                onChange={(e: any) => setNewMemoryCategory(e.target.value)}
+                style={{ fontSize: '12.5px', borderRadius: '12px', border: '1px solid #e5e5e5', padding: '8px 12px' }}
               >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Form: Ajarkan Hal Baru */}
-            <form
-              onSubmit={handleAddMemory}
-              style={{
-                background: '#f8fafc',
-                padding: '14px',
-                borderRadius: '10px',
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-              }}
-            >
-              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#334155' }}>
-                + Ajarkan Target / Aturan Baru ke AI
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '8px' }}>
-                <select
-                  className="form-select"
-                  value={newMemoryCategory}
-                  onChange={(e: any) => setNewMemoryCategory(e.target.value)}
-                  style={{ fontSize: '12px' }}
-                >
-                  <option value="FINANCIAL_GOAL">🎯 Target Finansial</option>
-                  <option value="FINANCIAL_RULE">⚡ Aturan Transaksi</option>
-                  <option value="USER_PREFERENCE">💡 Preferensi Kebiasaan</option>
-                </select>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Judul (contoh: Target Dana Darurat 20 Juta)"
-                  value={newMemoryTitle}
-                  onChange={(e) => setNewMemoryTitle(e.target.value)}
-                  required
-                  style={{ fontSize: '12px' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Instruksi lengkap (contoh: Kumpulkan dana darurat 20jt di RDPU tahun ini)"
-                  value={newMemoryFact}
-                  onChange={(e) => setNewMemoryFact(e.target.value)}
-                  required
-                  style={{ fontSize: '12px' }}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={addingMemory || !newMemoryTitle.trim() || !newMemoryFact.trim()}
-                  style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
-                >
-                  {addingMemory ? 'Menyimpan...' : 'Ajarkan'}
-                </button>
-              </div>
-            </form>
-
-            {/* List of active learned memories */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#002244' }}>
-                  Daftar Memori Aktif ({memories.length})
-                </span>
-                {loadingMemories && <RefreshCw size={13} className="animate-spin" color="#187aba" />}
-              </div>
-
-              {memories.length === 0 ? (
-                <div style={{ padding: '24px', textAlign: 'center', fontSize: '12.5px', color: '#64748b', border: '1px dashed #cbd5e1', borderRadius: '8px' }}>
-                  Belum ada memori yang dipelajari. Chat AI seperti &ldquo;Target saya kumpulin 20 juta&rdquo; atau gunakan form di atas!
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
-                  {memories.map((m) => (
-                    <div
-                      key={m.id}
-                      style={{
-                        padding: '10px 12px',
-                        background: '#ffffff',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '10px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span
-                            style={{
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              background:
-                                m.category === 'FINANCIAL_GOAL'
-                                  ? '#dcfce7'
-                                  : m.category === 'FINANCIAL_RULE'
-                                  ? '#e0e7ff'
-                                  : '#fef3c7',
-                              color:
-                                m.category === 'FINANCIAL_GOAL'
-                                  ? '#166534'
-                                  : m.category === 'FINANCIAL_RULE'
-                                  ? '#3730a3'
-                                  : '#92400e',
-                            }}
-                          >
-                            {m.category}
-                          </span>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{m.title}</span>
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#475569' }}>{m.fact}</div>
-                        {m.actionableRule && (
-                          <div style={{ fontSize: '11px', color: '#4f46e5', fontStyle: 'italic' }}>
-                            ⚡ Aturan: {m.actionableRule}
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={() => handleDeleteMemory(m.id)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#94a3b8',
-                          cursor: 'pointer',
-                          padding: '4px',
-                        }}
-                        title="Hapus memori ini"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* On-Demand Web Crawler Modal */}
-      {showCrawlerModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 34, 68, 0.6)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px',
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '650px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-              border: '1px solid #e2e8f0',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    background: 'rgba(24, 122, 186, 0.1)',
-                    color: '#187aba',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Globe size={20} />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#002244' }}>
-                    Google & Web Economic Crawler
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                    Crawl data ekonomi real-time dan vektorisasi ke Neon pgvector
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowCrawlerModal(false)}
+                <option value="FINANCIAL_GOAL">🎯 Target Finansial</option>
+                <option value="FINANCIAL_RULE">⚡ Aturan Transaksi</option>
+                <option value="USER_PREFERENCE">💡 Preferensi Kebiasaan</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Judul (contoh: Target Dana Darurat 20 Juta)"
+                value={newMemoryTitle}
+                onChange={(e) => setNewMemoryTitle(e.target.value)}
+                required
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#94a3b8',
+                  fontSize: '12.5px',
+                  borderRadius: '12px',
+                  border: '1px solid #e5e5e5',
+                  padding: '8px 12px',
+                  outline: 'none',
                 }}
-              >
-                <X size={20} />
-              </button>
+              />
             </div>
-
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => setModalSource('GOOGLE_WEB')}
+              <input
+                type="text"
+                placeholder="Instruksi lengkap (contoh: Kumpulkan dana darurat 20jt di RDPU tahun ini)"
+                value={newMemoryFact}
+                onChange={(e) => setNewMemoryFact(e.target.value)}
+                required
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '8px',
                   fontSize: '12.5px',
-                  fontWeight: 600,
-                  border: modalSource === 'GOOGLE_WEB' ? '2px solid #187aba' : '1px solid #e2e8f0',
-                  background: modalSource === 'GOOGLE_WEB' ? '#f0f9ff' : '#ffffff',
-                  color: modalSource === 'GOOGLE_WEB' ? '#187aba' : '#64748b',
-                  cursor: 'pointer',
-                }}
-              >
-                🌐 Google Berita Ekonomi
-              </button>
-              <button
-                type="button"
-                onClick={() => setModalSource('DIRECT_URL')}
-                style={{
-                  flex: 1,
+                  borderRadius: '12px',
+                  border: '1px solid #e5e5e5',
                   padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  border: modalSource === 'DIRECT_URL' ? '2px solid #187aba' : '1px solid #e2e8f0',
-                  background: modalSource === 'DIRECT_URL' ? '#f0f9ff' : '#ffffff',
-                  color: modalSource === 'DIRECT_URL' ? '#187aba' : '#64748b',
-                  cursor: 'pointer',
+                  outline: 'none',
                 }}
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                disabled={addingMemory || !newMemoryTitle.trim() || !newMemoryFact.trim()}
+                style={{ borderRadius: '48px', whiteSpace: 'nowrap' }}
               >
-                🔗 URL Website Spesifik
-              </button>
+                {addingMemory ? 'Menyimpan...' : 'Ajarkan'}
+              </Button>
+            </div>
+          </form>
+
+          {/* List of active learned memories */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+                Daftar Memori Aktif ({memories.length})
+              </span>
+              {loadingMemories && <GoogleIcon name="sync" size={16} color="#005caa" className="animate-spin" />}
             </div>
 
-            <div>
-              <label style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                {modalSource === 'GOOGLE_WEB' ? 'Topik Ekonomi / Kata Kunci' : 'Alamat URL Lengkap Website'}
-              </label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder={
-                    modalSource === 'GOOGLE_WEB'
-                      ? 'Contoh: Suku bunga acuan BI-Rate 2026, IHSG, Inflasi pangan...'
-                      : 'Contoh: https://www.bi.go.id/id/publikasi/kajian/Pages/KSK.aspx'
-                  }
-                  value={modalTopic}
-                  onChange={(e) => setModalTopic(e.target.value)}
-                  disabled={crawlingModal}
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleModalCrawl}
-                  disabled={crawlingModal || !modalTopic.trim()}
-                  style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  {crawlingModal ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
-                  <span>{crawlingModal ? 'Crawling...' : 'Mulai Crawl'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Results Display */}
-            {crawlerResult && (
+            {memories.length === 0 ? (
               <div
                 style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '10px',
-                  padding: '14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
+                  padding: '28px',
+                  textAlign: 'center',
+                  fontSize: '13px',
+                  color: '#666666',
+                  border: '1px dashed #e5e5e5',
+                  borderRadius: '16px',
                 }}
               >
-                {crawlerResult.error ? (
-                  <div style={{ color: '#dc2626', fontSize: '13px', fontWeight: 600 }}>
-                    ❌ {crawlerResult.error}
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <CheckCircle2 size={16} /> Berhasil di-crawl & diindeks ke Neon pgvector!
-                      </span>
-                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#187aba' }}>
-                        {crawlerResult.totalChunksCount} Vektor Chunks
-                      </span>
+                Belum ada memori yang dipelajari. Chat AI seperti &ldquo;Target saya kumpulin 20 juta&rdquo; atau gunakan form di atas!
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                {memories.map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      padding: '12px 14px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e5e5',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      boxShadow: 'rgba(112, 144, 176, 0.04) 0px 1px 4px 0px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Badge
+                          variant={
+                            m.category === 'FINANCIAL_GOAL'
+                              ? 'success'
+                              : m.category === 'FINANCIAL_RULE'
+                              ? 'primary'
+                              : 'warning'
+                          }
+                          size="sm"
+                        >
+                          {m.category}
+                        </Badge>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#000000' }}>{m.title}</span>
+                      </div>
+                      <div style={{ fontSize: '12.5px', color: '#666666' }}>{m.fact}</div>
+                      {m.actionableRule && (
+                        <div style={{ fontSize: '11.5px', color: '#005caa', fontStyle: 'italic' }}>
+                          Aturan: {m.actionableRule}
+                        </div>
+                      )}
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '220px', overflowY: 'auto' }}>
-                      {crawlerResult.articles?.map((art: any, idx: number) => (
-                        <div
-                          key={idx}
-                          style={{
-                            padding: '8px 10px',
-                            background: '#ffffff',
-                            borderRadius: '6px',
-                            border: '1px solid #e2e8f0',
-                            fontSize: '12px',
-                          }}
-                        >
-                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{art.title}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                            Sumber: {art.source} &bull; Kategori: {art.category}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
+                    <button
+                      onClick={() => handleDeleteMemory(m.id)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#c5221f',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        borderRadius: '50%',
+                      }}
+                      title="Hapus memori ini"
+                    >
+                      <GoogleIcon name="delete" size={16} color="#c5221f" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
-      )}
+      </Modal>
+
+      {/* On-Demand Web Crawler Modal (Reusable Modal) */}
+      <Modal
+        isOpen={showCrawlerModal}
+        onClose={() => setShowCrawlerModal(false)}
+        title="Google & Web Economic Crawler"
+        subtitle="Crawl data ekonomi real-time dan vektorisasi ke Neon pgvector"
+        googleIcon="travel_explore"
+        maxWidth={650}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => setModalSource('GOOGLE_WEB')}
+              style={{
+                flex: 1,
+                padding: '10px 16px',
+                borderRadius: '48px',
+                fontSize: '13px',
+                fontWeight: 600,
+                border: modalSource === 'GOOGLE_WEB' ? '1px solid #005caa' : '1px solid #e5e5e5',
+                backgroundColor: modalSource === 'GOOGLE_WEB' ? '#e8f2fa' : '#ffffff',
+                color: modalSource === 'GOOGLE_WEB' ? '#005caa' : '#666666',
+                cursor: 'pointer',
+                fontFamily: "'Open Sans', sans-serif",
+                transition: 'all 0.15s ease',
+              }}
+            >
+              Google Berita Ekonomi
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalSource('DIRECT_URL')}
+              style={{
+                flex: 1,
+                padding: '10px 16px',
+                borderRadius: '48px',
+                fontSize: '13px',
+                fontWeight: 600,
+                border: modalSource === 'DIRECT_URL' ? '1px solid #005caa' : '1px solid #e5e5e5',
+                backgroundColor: modalSource === 'DIRECT_URL' ? '#e8f2fa' : '#ffffff',
+                color: modalSource === 'DIRECT_URL' ? '#005caa' : '#666666',
+                cursor: 'pointer',
+                fontFamily: "'Open Sans', sans-serif",
+                transition: 'all 0.15s ease',
+              }}
+            >
+              URL Website Spesifik
+            </button>
+          </div>
+
+          <div>
+            <label style={{ fontSize: '13px', fontWeight: 600, color: '#000000', display: 'block', marginBottom: '6px', fontFamily: "'Open Sans', sans-serif" }}>
+              {modalSource === 'GOOGLE_WEB' ? 'Topik Ekonomi / Kata Kunci' : 'Alamat URL Lengkap Website'}
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder={
+                  modalSource === 'GOOGLE_WEB'
+                    ? 'Contoh: Suku bunga acuan BI-Rate 2026, IHSG, Inflasi pangan...'
+                    : 'Contoh: https://www.bi.go.id/id/publikasi/kajian/Pages/KSK.aspx'
+                }
+                value={modalTopic}
+                onChange={(e) => setModalTopic(e.target.value)}
+                disabled={crawlingModal}
+                style={{
+                  flex: 1,
+                  padding: '10px 16px',
+                  borderRadius: '16px',
+                  border: '1px solid #e5e5e5',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
+              />
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={handleModalCrawl}
+                disabled={crawlingModal || !modalTopic.trim()}
+                googleIcon={crawlingModal ? 'sync' : 'search'}
+                style={{ borderRadius: '48px', whiteSpace: 'nowrap' }}
+              >
+                {crawlingModal ? 'Crawling...' : 'Mulai Crawl'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Modal Results Display */}
+          {crawlerResult && (
+            <div
+              style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e5e5e5',
+                borderRadius: '16px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              {crawlerResult.error ? (
+                <div style={{ color: '#c5221f', fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <GoogleIcon name="error" size={16} color="#c5221f" />
+                  <span>{crawlerResult.error}</span>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#137333', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <GoogleIcon name="check_circle" size={18} color="#137333" />
+                      <span>Berhasil di-crawl & diindeks ke Neon pgvector!</span>
+                    </span>
+                    <Badge variant="primary">
+                      {crawlerResult.totalChunksCount} Vektor Chunks
+                    </Badge>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+                    {crawlerResult.articles?.map((art: any, idx: number) => (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: '10px 14px',
+                          backgroundColor: '#ffffff',
+                          borderRadius: '12px',
+                          border: '1px solid #e5e5e5',
+                          fontSize: '12.5px',
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, color: '#000000' }}>{art.title}</div>
+                        <div style={{ fontSize: '11.5px', color: '#666666', marginTop: '2px' }}>
+                          Sumber: {art.source} &bull; Kategori: {art.category}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

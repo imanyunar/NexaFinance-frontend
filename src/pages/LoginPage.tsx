@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { GoogleIcon, Button, Input } from '../components/ui';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,48 +31,66 @@ export const LoginPage: React.FC = () => {
     <div
       style={{
         minHeight: '100vh',
-        background: '#f8fafd',
+        backgroundColor: '#ffffff',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px',
+        padding: '24px',
+        fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       }}
     >
       <div
         className="card"
         style={{
           width: '100%',
-          maxWidth: '420px',
-          padding: '36px 32px',
-          boxShadow: '0 12px 36px rgba(0, 34, 68, 0.08)',
-          background: '#ffffff',
+          maxWidth: '460px',
+          padding: '48px 36px',
+          borderRadius: '24px',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e5e5e5',
+          boxShadow: 'rgba(112, 144, 176, 0.1) 0px 0px 40px 8px',
         }}
       >
         {/* Brand Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              background: 'linear-gradient(135deg, #187aba, #003061)',
-              borderRadius: '12px',
+              width: '52px',
+              height: '52px',
+              backgroundColor: '#005caa',
+              borderRadius: '16px',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 800,
-              fontSize: '24px',
+              fontSize: '26px',
               color: '#ffffff',
-              boxShadow: '0 4px 14px rgba(24, 122, 186, 0.3)',
-              marginBottom: '12px',
+              boxShadow: '0 4px 14px rgba(0, 92, 170, 0.25)',
+              marginBottom: '16px',
             }}
           >
             N
           </div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, margin: 0, color: '#002244' }}>
-            Nexa<span style={{ color: '#187aba' }}>Finance</span>
+          <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: 700,
+              margin: '0 0 6px',
+              color: '#000000',
+              fontFamily: "'Open Sans', sans-serif",
+            }}
+          >
+            Masuk ke Akun
           </h1>
-          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-            Masuk ke Portal Manajemen Keuangan Institusional
+          <p
+            style={{
+              fontSize: '14px',
+              color: '#666666',
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            Lengkapi email dan kata sandi untuk masuk ke akun Anda
           </p>
         </div>
 
@@ -83,73 +101,77 @@ export const LoginPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              background: 'rgba(198, 34, 52, 0.08)',
-              border: '1px solid rgba(198, 34, 52, 0.2)',
-              borderRadius: '8px',
-              padding: '10px 14px',
-              color: '#c62234',
+              backgroundColor: '#fce8e6',
+              border: '1px solid #fad2cf',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              color: '#c5221f',
               fontSize: '13px',
-              marginBottom: '20px',
+              marginBottom: '24px',
             }}
           >
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <GoogleIcon name="error" size={18} color="#c5221f" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Email</label>
-            <div style={{ position: 'relative' }}>
-              <Mail
-                size={16}
-                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-              />
-              <input
-                type="email"
-                className="form-input"
-                placeholder="nama@nexafinance.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ paddingLeft: '36px' }}
-              />
-            </div>
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            placeholder="nama@nexafinance.com"
+            required
+            googleIcon="mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <div className="form-group">
-            <label className="form-label">Kata Sandi</label>
-            <div style={{ position: 'relative' }}>
-              <Lock
-                size={16}
-                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-              />
-              <input
-                type="password"
-                className="form-input"
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingLeft: '36px' }}
-              />
-            </div>
-          </div>
+          <Input
+            label="Kata Sandi"
+            type="password"
+            placeholder="••••••••"
+            required
+            googleIcon="lock"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <button
+          <Button
             type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-            style={{ width: '100%', marginTop: '12px', padding: '11px', fontSize: '14px' }}
+            variant="primary"
+            size="lg"
+            loading={loading}
+            googleIcon="arrow_forward"
+            iconPosition="right"
+            style={{
+              width: '100%',
+              marginTop: '12px',
+              borderRadius: '48px',
+              padding: '12px 32px',
+              fontSize: '15px',
+            }}
           >
             {loading ? 'Memverifikasi...' : 'Masuk ke Portal'}
-            {!loading && <ArrowRight size={15} />}
-          </button>
+          </Button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '12px', color: '#94a3b8' }}>
-          Terkoneksi aman ke Nexa Institutional Cloud & Neon Database
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '28px',
+            paddingTop: '20px',
+            borderTop: '1px solid #e5e5e5',
+            fontSize: '12px',
+            color: '#666666',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <GoogleIcon name="verified_user" size={15} color="#005caa" />
+          <span>Terkoneksi aman ke Nexa Institutional Cloud & Neon Database</span>
         </div>
       </div>
     </div>
