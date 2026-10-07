@@ -363,7 +363,7 @@ export const AppShell: React.FC = () => {
               { to: '/transactions', label: 'Buku Transaksi', icon: ReceiptText },
               { to: '/budgets', label: 'Batas Anggaran', icon: PiggyBank },
               { to: '/accounts', label: 'Rekening & Kas', icon: CreditCard },
-              { to: '/ai', label: 'AI Advisor & RAG', icon: Bot, badge: 'Groq LLM' },
+              { to: '/ai', label: 'Nexa AI Agent', icon: Bot, badge: 'Agent' },
             ].map((item) => (
               <NavLink
                 key={item.to}

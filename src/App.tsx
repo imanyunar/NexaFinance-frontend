@@ -7,7 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { TransactionsPage } from './pages/TransactionsPage';
 import { BudgetsPage } from './pages/BudgetsPage';
 import { AccountsPage } from './pages/AccountsPage';
-import { AiAdvisorPage } from './pages/AiAdvisorPage';
+import { AiAgentPage } from './pages/AiAgentPage';
 import { LoginPage } from './pages/LoginPage';
 
 const ProtectedLayout: React.FC = () => {
@@ -71,7 +71,8 @@ export const App: React.FC = () => {
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/budgets" element={<BudgetsPage />} />
             <Route path="/accounts" element={<AccountsPage />} />
-            <Route path="/ai" element={<AiAdvisorPage />} />
+            <Route path="/ai" element={<AiAgentPage />} />
+            <Route path="/agent" element={<AiAgentPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
