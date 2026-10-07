@@ -60,7 +60,7 @@ export const DashboardPage: React.FC = () => {
             Portofolio Kas {activeWorkspace?.name || 'Iman Azizi'}
           </h1>
           <p style={{ margin: 0, color: '#666666', fontSize: '14px', lineHeight: 1.5 }}>
-            Terintegrasi langsung ke WhatsApp Bot (085172247452) & Neon Serverless PostgreSQL.
+            Terintegrasi langsung ke WhatsApp Assistant & Neon Serverless PostgreSQL.
           </p>
         </div>
 
@@ -283,7 +283,7 @@ export const DashboardPage: React.FC = () => {
         {/* WhatsApp Assistant Card */}
         <Card
           title="WhatsApp Assistant Bot"
-          subtitle="Bot: 085172247452 • User: 087873861108"
+          subtitle="Saluran Interaktif Otomatisasi Transaksi (Privat)"
           googleIcon="smartphone"
           padding="28px"
         >

@@ -170,7 +170,7 @@ export const AppShell: React.FC = () => {
                 fontSize: '12px',
                 fontWeight: 600,
               }}
-              title="Fonnte Inbound Bot Online on 085172247452"
+              title="WhatsApp Bot Assistant Aktif (Private Channel)"
             >
               <GoogleIcon name="smartphone" size={15} color="#137333" />
               <span>WA Bot Aktif</span>
@@ -589,7 +589,7 @@ export const AppShell: React.FC = () => {
         </div>
         <div style={{ display: 'flex', gap: '16px' }}>
           <span>API: <code>nexafinance-alpha.vercel.app</code></span>
-          <span>WhatsApp Bot: <code>085172247452</code></span>
+          <span>Channel: <code style={{ color: '#137333' }}>Private Encrypted</code></span>
         </div>
       </footer>
     </div>

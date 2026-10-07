@@ -144,7 +144,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             <span style={{ color: '#666666', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <GoogleIcon name="smartphone" size={16} color="#666666" /> WhatsApp
             </span>
-            <span style={{ fontWeight: 600, color: '#000000' }}>087873861108</span>
+            <span style={{ fontWeight: 600, color: '#000000' }}>
+              {user?.whatsappNumber
+                ? user.whatsappNumber.length > 7
+                  ? `${user.whatsappNumber.slice(0, 4)}••••${user.whatsappNumber.slice(-4)}`
+                  : user.whatsappNumber
+                : '0878••••1108'}
+            </span>
           </div>
 
           <div style={{ height: '1px', backgroundColor: '#f0f0f0' }} />
