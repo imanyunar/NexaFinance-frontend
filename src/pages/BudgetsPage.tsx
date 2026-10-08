@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useWorkspace, Budget } from '../context/WorkspaceContext';
+import { useAuth } from '../context/AuthContext';
 import { Modal } from '../components/ui';
 
 export const BudgetsPage: React.FC = () => {
+  const { user } = useAuth();
   const {
     activeWorkspace,
     budgets,
@@ -10,6 +12,7 @@ export const BudgetsPage: React.FC = () => {
     selectedPeriod,
     setSelectedPeriod,
     categories,
+    transactions,
     createOrUpdateBudget,
     deleteBudget,
     createCategory,
@@ -42,10 +45,10 @@ export const BudgetsPage: React.FC = () => {
   };
 
   // Pre-calculated or dynamic metrics
-  const totalAllocated = budgetSummary?.totalBudget || 60000000;
-  const totalSpent = budgetSummary?.totalSpent || 42150000;
-  const remainingBudget = budgetSummary?.totalRemaining || Math.max(0, totalAllocated - totalSpent);
-  const overallBurnRate = totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 1000) / 10 : 70.25;
+  const totalAllocated = budgetSummary?.totalBudget ?? 0;
+  const totalSpent = budgetSummary?.totalSpent ?? 0;
+  const remainingBudget = budgetSummary?.totalRemaining ?? Math.max(0, totalAllocated - totalSpent);
+  const overallBurnRate = totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 1000) / 10 : 0;
 
   // Month navigation
   const handlePrevMonth = () => {
@@ -142,68 +145,18 @@ export const BudgetsPage: React.FC = () => {
     }
   };
 
-  // Mock list items if database is empty, or enhance database budgets
+  // Real budgets from database (no mock data)
   const displayBudgets = useMemo(() => {
-    if (budgets.length > 0) return budgets;
+    return budgets;
+  }, [budgets]);
 
-    return [
-      {
-        id: 'mock-1',
-        categoryId: 'cat-1',
-        categoryName: 'Operasional & Utilitas Kantor',
-        amount: 20000000,
-        spent: 12400000,
-        percentage: 62.0,
-        period: selectedPeriod,
-        tags: 'Sewa, PLN, Wi-Fi',
-        dept: 'HR & GA Division',
-      },
-      {
-        id: 'mock-2',
-        categoryId: 'cat-2',
-        categoryName: 'Beban Server, SaaS & AI API',
-        amount: 10000000,
-        spent: 7800000,
-        percentage: 78.0,
-        period: selectedPeriod,
-        tags: 'Neon, OpenAI, Vercel',
-        dept: 'Engineering Team',
-      },
-      {
-        id: 'mock-3',
-        categoryId: 'cat-3',
-        categoryName: 'Konsumsi & Pantry Team',
-        amount: 5000000,
-        spent: 4750000,
-        percentage: 95.0,
-        period: selectedPeriod,
-        tags: 'Overbudget Alert',
-        dept: 'General Affairs',
-      },
-      {
-        id: 'mock-4',
-        categoryId: 'cat-4',
-        categoryName: 'Marketing & Iklan Berbayar',
-        amount: 15000000,
-        spent: 11200000,
-        percentage: 74.6,
-        period: selectedPeriod,
-        tags: 'Meta Ads • Google SEM',
-        dept: 'Growth Team',
-      },
-      {
-        id: 'mock-5',
-        categoryId: 'cat-5',
-        categoryName: 'Logistik & Perlengkapan',
-        amount: 10000000,
-        spent: 6000000,
-        percentage: 60.0,
-        period: selectedPeriod,
-        tags: 'Kurir, ATK, Packaging',
-        dept: 'Fulfillment Team',
-      },
-    ];
-  }, [budgets, selectedPeriod]);
+  const criticalBudget = useMemo(() => {
+    return displayBudgets.find((b: any) => {
+      const cap = Number(b.amount) || 1;
+      const spent = Number(b.spent) || 0;
+      return (spent / cap) >= 0.9;
+    });
+  }, [displayBudgets]);
 
   return (
     <div className="flex flex-col gap-space-2xl">
@@ -280,8 +233,10 @@ export const BudgetsPage: React.FC = () => {
 
       {/* -------------------------------------------------------------
           GUARDRAIL PROACTIVE ALERT BANNER (BOT TRIGGERED)
+      {/* -------------------------------------------------------------
+          GUARDRAIL PROACTIVE ALERT BANNER (REAL DATA)
       -------------------------------------------------------------- */}
-      {showAlertBanner && (
+      {showAlertBanner && criticalBudget && (
         <section className="relative overflow-hidden bg-surface-container-lowest rounded-xl p-space-lg border border-error-container shadow-xs">
           <div className="absolute -right-16 -top-16 w-44 h-44 bg-error-container/20 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md relative z-10">
@@ -294,23 +249,16 @@ export const BudgetsPage: React.FC = () => {
                   <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">
                     Peringatan Dini Guardrail Aktif
                   </span>
-                  <span className="px-space-xs py-space-2xs rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase font-bold">
-                    Bot Triggered
+                  <span className="px-space-xs py-space-2xs rounded-full bg-error text-white font-label-caps text-label-caps uppercase font-bold">
+                    Limit Alert
                   </span>
                 </div>
                 <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">
-                  Kategori <strong className="text-on-surface font-semibold">Konsumsi &amp; Pantry Team</strong> telah menyentuh <strong className="text-error font-semibold">95%</strong> dari pagu bulan ini. WhatsApp bot telah mengirim pesan konfirmasi persetujuan limit darurat ke tim operasional.
+                  Kategori <strong className="text-on-surface font-semibold">{criticalBudget.categoryName}</strong> telah menyentuh <strong className="text-error font-semibold">{Math.round((Number(criticalBudget.spent) / (Number(criticalBudget.amount) || 1)) * 100)}%</strong> dari pagu bulan ini.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-space-sm self-end md:self-center shrink-0">
-              <button
-                type="button"
-                onClick={() => alert('Ambang batas WhatsApp Bot aktif di 80% (Peringatan) & 95% (Darurat).')}
-                className="px-space-md py-space-xs bg-surface-container text-on-surface hover:bg-surface-container-high rounded-lg font-body-sm text-body-sm font-semibold transition-all"
-              >
-                Atur Limit Notifikasi
-              </button>
               <button
                 type="button"
                 onClick={() => setShowAlertBanner(false)}
@@ -351,7 +299,7 @@ export const BudgetsPage: React.FC = () => {
           </div>
           <div className="pt-space-xs flex items-center gap-space-xs text-outline text-[12px]">
             <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
-            <span>Disetujui Iman Azizi</span>
+            <span>{user?.name ? `Disetujui ${user.name}` : 'Otorisasi Aktif'}</span>
           </div>
         </div>
 
@@ -373,12 +321,12 @@ export const BudgetsPage: React.FC = () => {
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Total beban hingga hari ke-24
+              Beban belanja periode berjalan
             </p>
           </div>
           <div className="pt-space-xs flex items-center gap-space-xs text-on-surface-variant text-[12px]">
             <span className="material-symbols-outlined text-[16px]">sync</span>
-            <span>84 mutasi terverifikasi</span>
+            <span>{transactions.length} mutasi terverifikasi</span>
           </div>
         </div>
 
@@ -475,7 +423,24 @@ export const BudgetsPage: React.FC = () => {
 
           {/* Category Cards */}
           <div className="space-y-space-md">
-            {displayBudgets.map((b: any) => {
+            {displayBudgets.length === 0 ? (
+              <div className="bg-surface-container-lowest rounded-xl p-space-2xl border border-dashed border-outline-variant text-center flex flex-col items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-[36px] text-outline">shield</span>
+                <p className="font-body-md text-on-surface font-semibold">Belum Ada Pagu Anggaran</p>
+                <p className="font-body-sm text-outline max-w-sm">
+                  Tetapkan batas pengeluaran untuk setiap kategori operasional agar cash flow perusahaan tetap terkendali.
+                </p>
+                <button
+                  type="button"
+                  onClick={openAddModal}
+                  className="mt-2 inline-flex items-center gap-1.5 px-space-md py-space-xs rounded-lg bg-primary text-on-primary font-body-sm font-semibold hover:bg-primary-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span>Tetapkan Anggaran Baru</span>
+                </button>
+              </div>
+            ) : (
+              displayBudgets.map((b: any) => {
               const cap = Number(b.amount) || 1;
               const spent = Number(b.spent) || 0;
               const pct = Math.round((spent / cap) * 1000) / 10;
@@ -606,7 +571,8 @@ export const BudgetsPage: React.FC = () => {
                   </div>
                 </div>
               );
-            })}
+            })
+          )}
           </div>
         </div>
 

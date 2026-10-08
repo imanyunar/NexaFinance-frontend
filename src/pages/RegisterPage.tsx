@@ -307,7 +307,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: Alex Pratama"
+                    placeholder="Nama lengkap Anda"
                     className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
                   />
                 </div>
@@ -330,7 +330,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value)}
-                    placeholder="Contoh: 081234567890"
+                    placeholder="Nomor WhatsApp aktif (misal: 0812...)"
                     className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
                   />
                 </div>
@@ -353,7 +353,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@perusahaan.com"
+                    placeholder="nama@perusahaan.com"
                     className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
                   />
                 </div>

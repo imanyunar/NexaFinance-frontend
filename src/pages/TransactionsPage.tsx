@@ -118,10 +118,10 @@ export const TransactionsPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const getSourceBadge = (tx: Transaction, index: number) => {
-    // Deterministic channel badge simulation matching Stitch mockups
-    const desc = tx.description?.toLowerCase() || '';
-    if (desc.includes('bot') || desc.includes('wa') || desc.includes('kasir') || index % 3 === 0) {
+  const getSourceBadge = (tx: Transaction) => {
+    const desc = (tx.description || '').toLowerCase();
+    const notes = (tx.notes || '').toLowerCase();
+    if (desc.includes('bot') || desc.includes('wa') || notes.includes('wa') || notes.includes('whatsapp')) {
       return (
         <span className="inline-flex items-center gap-1 px-space-sm py-space-2xs rounded-full bg-tertiary-fixed/30 font-badge-label text-badge-label text-on-tertiary-fixed-variant">
           <span className="material-symbols-outlined text-[13px]">mark_chat_read</span>
@@ -129,7 +129,7 @@ export const TransactionsPage: React.FC = () => {
         </span>
       );
     }
-    if (desc.includes('nota') || desc.includes('struk') || desc.includes('ocr') || desc.includes('subscription') || index % 3 === 1) {
+    if (desc.includes('nota') || desc.includes('struk') || desc.includes('ocr') || notes.includes('ocr')) {
       return (
         <span className="inline-flex items-center gap-1 px-space-sm py-space-2xs rounded-full bg-secondary-fixed/50 font-badge-label text-badge-label text-on-secondary-fixed-variant">
           <span className="material-symbols-outlined text-[13px]">document_scanner</span>
@@ -140,7 +140,7 @@ export const TransactionsPage: React.FC = () => {
     return (
       <span className="inline-flex items-center gap-1 px-space-sm py-space-2xs rounded-full bg-surface-container-high font-badge-label text-badge-label text-on-surface-variant">
         <span className="material-symbols-outlined text-[13px]">laptop_mac</span>
-        <span>Web Manual</span>
+        <span>Web App</span>
       </span>
     );
   };
@@ -472,7 +472,7 @@ export const TransactionsPage: React.FC = () => {
                       {/* Kategori */}
                       <td className="py-space-md px-space-md">
                         <span className="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-surface-container-high font-badge-label text-badge-label text-on-surface-variant font-medium">
-                          {isTransfer ? 'Transfer Kas' : tx.category?.name || 'Operasional'}
+                          {isTransfer ? 'Transfer Kas' : tx.category?.name || 'Umum'}
                         </span>
                       </td>
 
@@ -481,10 +481,10 @@ export const TransactionsPage: React.FC = () => {
                         {isTransfer ? (
                           <div className="flex flex-col font-numeric-table text-numeric-table">
                             <span className="font-medium text-on-surface">
-                              {tx.sourceAccount?.name || 'BCA Operasional'} →
+                              {tx.sourceAccount?.name || '-'} →
                             </span>
                             <span className="text-outline">
-                              {tx.destinationAccount?.name || 'Kas Kasir'}
+                              {tx.destinationAccount?.name || '-'}
                             </span>
                           </div>
                         ) : (
@@ -495,7 +495,7 @@ export const TransactionsPage: React.FC = () => {
                               }`}
                             ></span>
                             <span className="font-medium">
-                              {tx.sourceAccount?.name || 'BCA Operasional'}
+                              {tx.sourceAccount?.name || '-'}
                             </span>
                           </div>
                         )}
@@ -530,7 +530,7 @@ export const TransactionsPage: React.FC = () => {
 
                       {/* Verifikasi Badge */}
                       <td className="py-space-md px-space-md">
-                        {getSourceBadge(tx, idx)}
+                        {getSourceBadge(tx)}
                       </td>
 
                       {/* Aksi Rollback */}

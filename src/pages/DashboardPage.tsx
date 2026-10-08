@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { useAuth } from '../context/AuthContext';
@@ -17,18 +17,20 @@ export const DashboardPage: React.FC = () => {
 
   const totalExpense = transactions
     .filter((t) => t.type === 'EXPENSE')
-    .reduce((sum, t) => sum + Number(t.amount), 0) || 54320500;
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalIncome = transactions
     .filter((t) => t.type === 'INCOME')
-    .reduce((sum, t) => sum + Number(t.amount), 0) || 128450000;
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netCashFlow = totalIncome - totalExpense;
 
   const recentTransactions = transactions.slice(0, 5);
 
-  const getSourceBadge = (index: number) => {
-    if (index % 3 === 0) {
+  const getSourceBadge = (tx: any) => {
+    const desc = (tx?.description || '').toLowerCase();
+    const notes = (tx?.notes || '').toLowerCase();
+    if (desc.includes('bot') || desc.includes('wa') || notes.includes('wa') || notes.includes('whatsapp')) {
       return (
         <span className="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-tertiary-fixed/30 font-badge-label text-badge-label text-on-tertiary-fixed-variant">
           <span className="material-symbols-outlined text-[13px]">mark_chat_read</span>
@@ -36,7 +38,7 @@ export const DashboardPage: React.FC = () => {
         </span>
       );
     }
-    if (index % 3 === 1) {
+    if (desc.includes('ocr') || desc.includes('nota') || desc.includes('struk') || notes.includes('ocr')) {
       return (
         <span className="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-secondary-fixed/50 font-badge-label text-badge-label text-on-secondary-fixed-variant">
           <span className="material-symbols-outlined text-[13px]">document_scanner</span>
@@ -47,10 +49,41 @@ export const DashboardPage: React.FC = () => {
     return (
       <span className="inline-flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-surface-container-high font-badge-label text-badge-label text-on-surface-variant">
         <span className="material-symbols-outlined text-[13px]">laptop_mac</span>
-        <span>Web Manual</span>
+        <span>Web App</span>
       </span>
     );
   };
+
+  const weeklyCashflow = useMemo(() => {
+    const weeks = [
+      { label: 'Minggu 1', inAmt: 0, outAmt: 0 },
+      { label: 'Minggu 2', inAmt: 0, outAmt: 0 },
+      { label: 'Minggu 3', inAmt: 0, outAmt: 0 },
+      { label: 'Minggu 4', inAmt: 0, outAmt: 0 },
+    ];
+
+    transactions.forEach((tx) => {
+      const d = new Date(tx.date || '');
+      const day = isNaN(d.getDate()) ? 1 : d.getDate();
+      const weekIdx = Math.min(3, Math.floor((day - 1) / 7));
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === 'INCOME') {
+        weeks[weekIdx].inAmt += amt;
+      } else if (tx.type === 'EXPENSE') {
+        weeks[weekIdx].outAmt += amt;
+      }
+    });
+
+    const maxVal = Math.max(...weeks.map((w) => Math.max(w.inAmt, w.outAmt)), 1);
+
+    return weeks.map((w) => ({
+      label: w.label,
+      in: Math.min(100, Math.round((w.inAmt / maxVal) * 100)),
+      out: Math.min(100, Math.round((w.outAmt / maxVal) * 100)),
+      inVal: formatRupiah(w.inAmt),
+      outVal: formatRupiah(w.outAmt),
+    }));
+  }, [transactions]);
 
   return (
     <div className="flex flex-col gap-space-2xl">
@@ -112,15 +145,15 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="my-space-md">
             <span className="font-title-balance text-title-balance text-on-surface font-bold tabular-nums">
-              {formatRupiah(totalBalance || 348650000)}
+              {formatRupiah(totalBalance)}
             </span>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              {accounts.length || 5} Pos Kas Terdaftar
+              {accounts.length} Pos Kas Terdaftar
             </p>
           </div>
           <div className="pt-space-xs flex items-center gap-1 text-[12px] text-tertiary font-semibold">
             <span className="material-symbols-outlined text-[16px]">verified</span>
-            <span>96.8% Siap Cair</span>
+            <span>{totalBalance > 0 ? 'Likuiditas Siap Cair' : 'Saldo Kas Nol'}</span>
           </div>
         </div>
 
@@ -139,12 +172,12 @@ export const DashboardPage: React.FC = () => {
               {formatRupiah(totalIncome)}
             </span>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              {transactions.filter((t) => t.type === 'INCOME').length || 36} mutasi masuk
+              {transactions.filter((t) => t.type === 'INCOME').length} mutasi masuk
             </p>
           </div>
           <div className="pt-space-xs flex items-center gap-1 text-[12px] text-tertiary font-semibold">
             <span className="material-symbols-outlined text-[16px]">trending_up</span>
-            <span>+14.8% vs bulan lalu</span>
+            <span>{totalIncome > 0 ? 'Pemasukan Aktif' : 'Belum Ada Pemasukan'}</span>
           </div>
         </div>
 
@@ -163,11 +196,11 @@ export const DashboardPage: React.FC = () => {
               {formatRupiah(totalExpense)}
             </span>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              {transactions.filter((t) => t.type === 'EXPENSE').length || 98} transaksi terverifikasi
+              {transactions.filter((t) => t.type === 'EXPENSE').length} transaksi terverifikasi
             </p>
           </div>
           <div className="pt-space-xs flex items-center gap-1 text-[12px] text-on-surface-variant">
-            <span>Burn rate: 70.2% dari pagu</span>
+            <span>Rasio belanja: {totalIncome > 0 ? ((totalExpense / totalIncome) * 100).toFixed(1) + '%' : '0%'}</span>
           </div>
         </div>
 
@@ -227,23 +260,18 @@ export const DashboardPage: React.FC = () => {
 
             {/* Visual Bar Chart Comparison */}
             <div className="grid grid-cols-4 gap-space-md pt-space-sm items-end h-44 text-center">
-              {[
-                { label: 'Minggu 1', in: 85, out: 40, inVal: '32M', outVal: '12M' },
-                { label: 'Minggu 2', in: 60, out: 55, inVal: '24M', outVal: '18M' },
-                { label: 'Minggu 3', in: 95, out: 45, inVal: '45M', outVal: '14M' },
-                { label: 'Minggu 4', in: 70, out: 30, inVal: '27M', outVal: '10M' },
-              ].map((w, idx) => (
+              {weeklyCashflow.map((w, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1 h-full justify-end">
                   <div className="flex items-end gap-1.5 h-32 w-full justify-center">
                     <div
                       className="w-5 bg-primary rounded-t-md hover:bg-primary-container transition-all"
                       style={{ height: `${w.in}%` }}
-                      title={`Pemasukan: Rp ${w.inVal}`}
+                      title={`Pemasukan: ${w.inVal}`}
                     ></div>
                     <div
                       className="w-5 bg-error/80 rounded-t-md hover:bg-error transition-all"
                       style={{ height: `${w.out}%` }}
-                      title={`Pengeluaran: Rp ${w.outVal}`}
+                      title={`Pengeluaran: ${w.outVal}`}
                     ></div>
                   </div>
                   <span className="font-body-sm text-outline text-[12px]">{w.label}</span>
@@ -304,7 +332,7 @@ export const DashboardPage: React.FC = () => {
                             {tx.description}
                           </p>
                           <p className="font-body-sm text-outline text-[12px] truncate">
-                            {tx.sourceAccount?.name || 'BCA Operasional'} • {new Date(tx.date || '').toLocaleDateString('id-ID')}
+                            {tx.sourceAccount?.name || '-'} • {new Date(tx.date || '').toLocaleDateString('id-ID')}
                           </p>
                         </div>
                       </div>
@@ -318,7 +346,7 @@ export const DashboardPage: React.FC = () => {
                           >
                             {isIncome ? `+ ${formatRupiah(Number(tx.amount))}` : `- ${formatRupiah(Number(tx.amount))}`}
                           </span>
-                          {getSourceBadge(idx)}
+                          {getSourceBadge(tx)}
                         </div>
                         <button
                           type="button"
@@ -359,30 +387,36 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div className="space-y-space-xs">
-              {accounts.map((acc, i) => (
-                <div
-                  key={acc.id}
-                  className="p-space-sm rounded-lg bg-surface-container-low/60 border border-outline-variant/40 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-space-sm">
-                    <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center font-bold text-xs text-primary">
-                      {acc.type === 'BANK' ? 'BK' : acc.type === 'EWALLET' ? 'EW' : 'CS'}
-                    </div>
-                    <div>
-                      <h4 className="font-body-md font-semibold text-on-surface">
-                        {acc.name}
-                      </h4>
-                      <p className="font-label-caps text-label-caps text-outline uppercase">
-                        {acc.type === 'BANK' ? 'Bank Komersil' : acc.type === 'EWALLET' ? 'E-Wallet / QRIS' : 'Petty Cash'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="font-title-balance text-[15px] font-bold text-on-surface tabular-nums">
-                    {formatRupiah(Number(acc.balance))}
-                  </span>
+              {accounts.length === 0 ? (
+                <div className="p-space-md text-center text-outline text-body-sm bg-surface-container-low/40 rounded-lg">
+                  Belum ada pos kas terdaftar.
                 </div>
-              ))}
+              ) : (
+                accounts.map((acc, i) => (
+                  <div
+                    key={acc.id}
+                    className="p-space-sm rounded-lg bg-surface-container-low/60 border border-outline-variant/40 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-space-sm">
+                      <div className="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center font-bold text-xs text-primary">
+                        {acc.type === 'BANK' ? 'BK' : acc.type === 'EWALLET' ? 'EW' : 'CS'}
+                      </div>
+                      <div>
+                        <h4 className="font-body-md font-semibold text-on-surface">
+                          {acc.name}
+                        </h4>
+                        <p className="font-label-caps text-label-caps text-outline uppercase">
+                          {acc.type === 'BANK' ? 'Bank Komersil' : acc.type === 'EWALLET' ? 'E-Wallet / QRIS' : 'Petty Cash'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="font-title-balance text-[15px] font-bold text-on-surface tabular-nums">
+                      {formatRupiah(Number(acc.balance))}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

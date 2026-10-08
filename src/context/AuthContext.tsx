@@ -155,24 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           loggedInUser = data.user;
         }
       } catch (err: any) {
-        // Fallback demo authentication for evaluation accounts
-        if (email.toLowerCase().includes('demo') || email.toLowerCase().includes('alex')) {
-          loggedInUser = {
-            id: 'cmuwwoh3v0000uw4kyagv54br',
-            name: 'Alex Pratama',
-            email: email,
-            whatsappNumber: '085172247452',
-          };
-        } else if (email.toLowerCase().includes('iman')) {
-          loggedInUser = {
-            id: 'usr_iman',
-            name: 'Iman Azizi',
-            email: email,
-            whatsappNumber: '081299887766',
-          };
-        } else {
-          throw err;
-        }
+        throw err;
       }
 
       // Clear explicit logout flag upon genuine user authentication
@@ -211,23 +194,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch {}
           return;
         }
-      } catch {
-        // Fallback to active demo/offline session if backend credentials differ
+        throw new Error('Sesi tidak valid.');
+      } catch (err: any) {
+        throw err;
       }
-
-      // 2. Resilient session creation for OTP-verified email
-      const fallbackUser: AuthUser = {
-        id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: email.split('@')[0].toUpperCase(),
-        email: email,
-        whatsappNumber: '+6281234567890',
-      };
-      setUser(fallbackUser);
-      try {
-        localStorage.removeItem('nexa_explicit_logged_out');
-        sessionStorage.setItem('nexa_session_active', 'true');
-        localStorage.setItem('nexa_last_activity', String(Date.now()));
-      } catch {}
     } finally {
       setLoading(false);
     }
@@ -287,22 +257,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch {}
           return;
         }
-      } catch {
-        // Fallback for resilient onboarding demo
+        throw new Error('Gagal mendaftarkan akun. Silakan coba kembali.');
+      } catch (err: any) {
+        throw err;
       }
-
-      const fallbackUser: AuthUser = {
-        id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: name || email.split('@')[0].toUpperCase(),
-        email: email,
-        whatsappNumber: cleanWa || '+6281234567890',
-      };
-      setUser(fallbackUser);
-      try {
-        localStorage.removeItem('nexa_explicit_logged_out');
-        sessionStorage.setItem('nexa_session_active', 'true');
-        localStorage.setItem('nexa_last_activity', String(Date.now()));
-      } catch {}
     } finally {
       setLoading(false);
     }
@@ -392,17 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(updatedUser);
       return updatedUser;
     } catch (err: any) {
-      if (err.message && (err.message.includes('terdaftar') || err.message.includes('valid'))) {
-        throw err;
-      }
-      const fallbackUser: AuthUser = {
-        ...(user || { id: 'usr_local', email: data.email || 'user@nexafinance.com', name: data.name || 'User' }),
-        ...(data.name ? { name: data.name } : {}),
-        ...(data.email ? { email: data.email } : {}),
-        ...(data.whatsappNumber ? { whatsappNumber: data.whatsappNumber } : {}),
-      };
-      setUser(fallbackUser);
-      return fallbackUser;
+      throw err;
     }
   };
 

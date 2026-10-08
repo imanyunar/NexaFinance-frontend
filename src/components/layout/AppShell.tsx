@@ -149,7 +149,7 @@ export const AppShell: React.FC = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="font-body-md text-body-md text-on-surface truncate font-semibold leading-tight">
-                    {activeWorkspace?.name || 'Nexa Digital Agency'}
+                    {activeWorkspace?.name || 'Workspace Keuangan'}
                   </p>
                   <p className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-space-xs mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
@@ -252,14 +252,14 @@ export const AppShell: React.FC = () => {
           >
             <div className="flex items-center gap-space-sm min-w-0">
               <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold text-xs flex items-center justify-center shrink-0">
-                {user?.name?.slice(0, 2).toUpperCase() || 'IA'}
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'}
               </div>
               <div className="min-w-0">
                 <p className="font-body-md text-body-md text-on-surface truncate font-semibold leading-tight">
-                  {user?.name || 'Iman Azizi'}
+                  {user?.name || 'Pengguna'}
                 </p>
                 <p className="font-label-caps text-label-caps text-on-surface-variant truncate text-[11px]">
-                  Business Owner · #WS-8821
+                  {activeWorkspace?.role || 'Owner'} · #{activeWorkspace?.id ? activeWorkspace.id.slice(0, 6).toUpperCase() : 'WS-01'}
                 </p>
               </div>
             </div>

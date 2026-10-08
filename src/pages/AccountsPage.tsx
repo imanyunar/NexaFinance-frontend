@@ -41,19 +41,19 @@ export const AccountsPage: React.FC = () => {
       else c += bal;
     });
 
-    const tot = b + e + c || 348650000;
-    const bTot = b || 307900000;
-    const eTot = e || 32550000;
-    const cTot = c || 8200000;
+    const tot = b + e + c;
+    const bTot = b;
+    const eTot = e;
+    const cTot = c;
 
     return {
       bankTotal: bTot,
       ewalletTotal: eTot,
       cashTotal: cTot,
       totalNetAssets: tot,
-      bankRatio: Math.round((bTot / tot) * 1000) / 10 || 88.3,
-      ewalletRatio: Math.round((eTot / tot) * 1000) / 10 || 9.3,
-      cashRatio: Math.round((cTot / tot) * 1000) / 10 || 2.4,
+      bankRatio: tot > 0 ? Math.round((bTot / tot) * 1000) / 10 : 0,
+      ewalletRatio: tot > 0 ? Math.round((eTot / tot) * 1000) / 10 : 0,
+      cashRatio: tot > 0 ? Math.round((cTot / tot) * 1000) / 10 : 0,
     };
   }, [accounts]);
 
@@ -150,7 +150,7 @@ export const AccountsPage: React.FC = () => {
             Rekening &amp; Dompet Kas
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Total likuiditas kas aktif terdistribusi pada {accounts.length || 5} pos keuangan real-time dengan sinkronisasi mutasi multi-kanal.
+            Total likuiditas kas aktif terdistribusi pada {accounts.length} pos keuangan real-time dengan sinkronisasi mutasi multi-kanal.
           </p>
         </div>
 
@@ -191,7 +191,7 @@ export const AccountsPage: React.FC = () => {
                 </span>
               </div>
               <span className="font-numeric-table text-numeric-table text-on-surface-variant font-medium">
-                {accounts.length || 5} Pos Kas Terdaftar
+                {accounts.length} Pos Kas Terdaftar
               </span>
             </div>
 
@@ -212,7 +212,7 @@ export const AccountsPage: React.FC = () => {
             <div className="flex items-center justify-between text-body-sm font-body-sm mb-space-xs">
               <span className="text-on-surface-variant">Alokasi Rasio Likuiditas</span>
               <span className="font-numeric-table text-numeric-table text-tertiary font-bold">
-                96.8% Siap Cair
+                {totalNetAssets > 0 ? 'Likuiditas Siap Cair' : 'Belum Ada Saldo'}
               </span>
             </div>
 
