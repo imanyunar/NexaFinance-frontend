@@ -48,11 +48,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleFillDemo = (demoEmail: string, demoPass: string = 'admin123') => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError(null);
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-space-md relative overflow-hidden font-body-md antialiased text-on-surface">
@@ -181,26 +176,6 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Demo Helper Pill */}
-        <div className="p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/60 flex items-center justify-between text-body-sm flex-wrap gap-2">
-          <span className="text-on-surface-variant text-[12px] font-medium">Akun Demo Cepat:</span>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleFillDemo('demo@nexafinance.com', 'admin123')}
-              className="font-badge-label text-badge-label font-semibold text-primary hover:underline bg-white px-2 py-0.5 rounded-lg border border-outline-variant/60 text-[11px]"
-            >
-              Alex (demo)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillDemo('iman@gmail.com', 'admin123')}
-              className="font-badge-label text-badge-label font-semibold text-primary hover:underline bg-white px-2 py-0.5 rounded-lg border border-outline-variant/60 text-[11px]"
-            >
-              Iman
-            </button>
-          </div>
-        </div>
 
         {/* Register Link */}
         <div className="text-center text-body-sm text-on-surface-variant border-t border-surface-container-high/60 pt-3">

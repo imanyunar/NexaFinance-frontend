@@ -218,13 +218,6 @@ export const RegisterPage: React.FC = () => {
     verifyAndRegister(code);
   };
 
-  const handleFillDemoForm = () => {
-    setName('Alex Pratama (Nexa Creative)');
-    setEmail('alex@nexaagency.id');
-    setPassword('alex123456');
-    setConfirmPassword('alex123456');
-    setWhatsappNumber('081299887766');
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-space-md relative overflow-hidden font-body-md antialiased text-on-surface">
@@ -435,17 +428,6 @@ export const RegisterPage: React.FC = () => {
               </button>
             </form>
 
-            {/* Quick Demo Helper */}
-            <div className="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between text-body-sm">
-              <span className="text-on-surface-variant text-[12.5px]">Isi Otomatis Tester:</span>
-              <button
-                type="button"
-                onClick={handleFillDemoForm}
-                className="font-badge-label text-badge-label font-semibold text-primary hover:underline bg-white px-2.5 py-1 rounded-lg border border-outline-variant/60"
-              >
-                Isi Data Contoh
-              </button>
-            </div>
 
             <div className="text-center text-body-sm text-on-surface-variant border-t border-surface-container-high/60 pt-2">
               Sudah memiliki akun?{' '}
