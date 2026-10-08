@@ -221,13 +221,17 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Transaction CRUD
   const createTransaction = async (data: any) => {
     if (!activeWorkspace) return;
+    const targetAccountId = data.accountId || data.sourceAccountId || accounts[0]?.id;
+    if (!targetAccountId) {
+      throw new Error('Pilih rekening terlebih dahulu');
+    }
     const payload = {
-      type: data.type,
-      accountId: data.accountId || data.sourceAccountId,
+      type: data.type || 'EXPENSE',
+      accountId: targetAccountId,
       toAccountId: data.toAccountId !== undefined ? data.toAccountId : data.destinationAccountId || null,
       categoryId: data.categoryId || null,
-      amount: Number(data.amount),
-      description: data.description,
+      amount: Number(data.amount) || 0,
+      description: data.description || 'Transaksi',
       notes: data.notes || null,
       transactedAt: data.transactedAt || data.date || new Date().toISOString(),
     };
