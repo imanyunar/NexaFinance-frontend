@@ -28,17 +28,28 @@ export const AppShell: React.FC = () => {
     }).format(val);
   };
 
+  React.useEffect(() => {
+    if (!sourceAccountId && accounts.length > 0) {
+      setSourceAccountId(accounts[0].id);
+    }
+  }, [accounts, sourceAccountId]);
+
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !description || !sourceAccountId) return;
+    const effectiveSourceId = sourceAccountId || accounts[0]?.id;
+    if (!amount || !effectiveSourceId) {
+      alert('Lengkapi nominal dan pilih rekening terlebih dahulu');
+      return;
+    }
+    const cleanDesc = description.trim() || 'Transaksi';
     try {
       setSubmitting(true);
       await createTransaction({
         type: txType,
         amount: Number(amount),
-        description,
-        accountId: sourceAccountId,
-        sourceAccountId,
+        description: cleanDesc,
+        accountId: effectiveSourceId,
+        sourceAccountId: effectiveSourceId,
         toAccountId: txType === 'TRANSFER' ? destinationAccountId : null,
         destinationAccountId: txType === 'TRANSFER' ? destinationAccountId : null,
         categoryId: txType !== 'TRANSFER' && categoryId ? categoryId : null,
