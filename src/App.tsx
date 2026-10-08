@@ -79,11 +79,24 @@ const ProtectedLayout: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-  const [showSplash, setShowSplash] = React.useState(true);
+  const [showSplash, setShowSplash] = React.useState(() => {
+    try {
+      return !window.sessionStorage.getItem('nexa_splash_seen');
+    } catch {
+      return true;
+    }
+  });
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    try {
+      window.sessionStorage.setItem('nexa_splash_seen', 'true');
+    } catch {}
+  };
 
   return (
     <AuthProvider>
-      {showSplash && <AppRevealSplash onComplete={() => setShowSplash(false)} />}
+      {showSplash && <AppRevealSplash onComplete={handleSplashComplete} />}
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>

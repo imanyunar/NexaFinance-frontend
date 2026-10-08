@@ -14,24 +14,24 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
   const [phase, setPhase] = useState<'intro' | 'opening' | 'done'>('intro');
 
   useEffect(() => {
-    // Stage 1: Display Logo & Glow (0ms - 850ms)
-    const openTimer = setTimeout(() => {
+    // Stage 1: Emblem presentation (0ms - 450ms)
+    const openTimer = window.setTimeout(() => {
       setPhase('opening');
-    }, 950);
+    }, 450);
 
-    // Stage 2: Curtain & Portal Open Complete (1450ms)
-    const finishTimer = setTimeout(() => {
+    // Stage 2: Hardware-accelerated shutter curtains glide open (450ms - 900ms)
+    const finishTimer = window.setTimeout(() => {
       setPhase('done');
       onComplete?.();
-    }, 1550);
+    }, 920);
 
     return () => {
-      clearTimeout(openTimer);
-      clearTimeout(finishTimer);
+      window.clearTimeout(openTimer);
+      window.clearTimeout(finishTimer);
     };
   }, [onComplete]);
 
-  // Click to skip animation instantly
+  // Click or touch to skip immediately
   const handleSkip = () => {
     setPhase('done');
     onComplete?.();
@@ -55,118 +55,77 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
         cursor: 'pointer',
         overflow: 'hidden',
         pointerEvents: isOpening ? 'none' : 'auto',
+        backgroundColor: 'transparent',
       }}
     >
-      {/* Top Vault Shutter Curtain */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '50%',
-          backgroundColor: '#001428',
-          borderBottom: '1.5px solid rgba(56, 189, 248, 0.4)',
-          transform: isOpening ? 'translateY(-101%)' : 'translateY(0)',
-          transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
-          willChange: 'transform',
-          zIndex: 1,
-        }}
-      />
+      {/* Top Vault Shutter Curtain (GPU translate3d compositor) */}
+      <div className={`nexa-splash-curtain-top ${isOpening ? 'opening' : ''}`} />
 
-      {/* Bottom Vault Shutter Curtain */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '50%',
-          backgroundColor: '#001428',
-          borderTop: '1.5px solid rgba(56, 189, 248, 0.4)',
-          transform: isOpening ? 'translateY(101%)' : 'translateY(0)',
-          transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
-          willChange: 'transform',
-          zIndex: 1,
-        }}
-      />
+      {/* Bottom Vault Shutter Curtain (GPU translate3d compositor) */}
+      <div className={`nexa-splash-curtain-bottom ${isOpening ? 'opening' : ''}`} />
 
       {/* Ambient Radial Spotlight Backing */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle at 50% 50%, rgba(0, 92, 170, 0.35) 0%, rgba(0, 20, 40, 0.95) 75%)',
+          background: 'radial-gradient(circle at 50% 50%, rgba(0, 92, 170, 0.4) 0%, rgba(0, 20, 40, 0.96) 70%)',
           opacity: isOpening ? 0 : 1,
-          transition: 'opacity 0.5s ease',
+          transition: 'opacity 0.4s ease',
+          pointerEvents: 'none',
           zIndex: 2,
         }}
       />
 
-      {/* Central Emblem & Brand Motion Stage */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '18px',
-          transform: isOpening ? 'scale(1.35) translateY(-20px)' : 'scale(1) translateY(0)',
-          opacity: isOpening ? 0 : 1,
-          filter: isOpening ? 'blur(8px)' : 'blur(0)',
-          transition: 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease, filter 0.45s ease',
-          willChange: 'transform, opacity, filter',
-        }}
-      >
-        {/* Glowing Logo Icon */}
+      {/* Central Emblem & Brand Motion Stage (GPU Compositor Layer) */}
+      <div className={`nexa-splash-stage ${isOpening ? 'opening' : ''}`}>
+        {/* Logo Emblem Icon */}
         <div
           style={{
             position: 'relative',
-            width: '84px',
-            height: '84px',
+            width: '80px',
+            height: '80px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          {/* Subtle Outer Glow Ring */}
+          {/* Static Ambient Glow (No CPU-taxing SVG filter during motion) */}
           <div
             style={{
               position: 'absolute',
-              inset: '-8px',
+              inset: '-12px',
               borderRadius: '28px',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(0, 92, 170, 0) 70%)',
-              animation: 'emblem-pulse-glow 1.5s ease-in-out infinite alternate',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(0, 92, 170, 0) 70%)',
+              pointerEvents: 'none',
             }}
           />
 
-          {/* SVG Monogram Emblem */}
+          {/* Clean Vector Monogram SVG */}
           <svg
             viewBox="0 0 128 128"
-            width="84"
-            height="84"
+            width="80"
+            height="80"
             style={{
-              filter: 'drop-shadow(0 8px 24px rgba(0, 92, 170, 0.6))',
               position: 'relative',
               zIndex: 2,
             }}
           >
             <defs>
               <linearGradient id="splashBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#001a33" />
-                <stop offset="50%" stop-color="#003566" />
-                <stop offset="100%" stop-color="#005caa" />
+                <stop offset="0%" stopColor="#001a33" />
+                <stop offset="50%" stopColor="#003566" />
+                <stop offset="100%" stopColor="#005caa" />
               </linearGradient>
               <linearGradient id="splashNGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#38bdf8" />
-                <stop offset="50%" stop-color="#0284c7" />
-                <stop offset="100%" stop-color="#005caa" />
+                <stop offset="0%" stopColor="#38bdf8" />
+                <stop offset="50%" stopColor="#0284c7" />
+                <stop offset="100%" stopColor="#005caa" />
               </linearGradient>
               <linearGradient id="splashBeam" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#7dd3fc" />
-                <stop offset="60%" stop-color="#0284c7" />
-                <stop offset="100%" stop-color="#003566" />
+                <stop offset="0%" stopColor="#7dd3fc" />
+                <stop offset="60%" stopColor="#0284c7" />
+                <stop offset="100%" stopColor="#003566" />
               </linearGradient>
             </defs>
             <rect
@@ -177,8 +136,8 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
               rx="34"
               fill="url(#splashBgGrad)"
               stroke="#38bdf8"
-              stroke-width="3"
-              stroke-opacity="0.5"
+              strokeWidth="3"
+              strokeOpacity="0.5"
             />
             <rect
               x="10"
@@ -188,8 +147,8 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
               rx="28"
               fill="none"
               stroke="#ffffff"
-              stroke-width="1.2"
-              stroke-opacity="0.15"
+              strokeWidth="1.2"
+              strokeOpacity="0.15"
             />
             <path d="M34 32 H48 V96 H34 Z" fill="url(#splashNGrad)" />
             <path d="M80 32 H94 V96 H80 Z" fill="url(#splashNGrad)" />
@@ -203,7 +162,7 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
         <div style={{ textAlign: 'center' }}>
           <div
             style={{
-              fontSize: '26px',
+              fontSize: '25px',
               fontWeight: 800,
               letterSpacing: '-0.5px',
               fontFamily: "'Plus Jakarta Sans', 'Open Sans', sans-serif",
@@ -228,7 +187,7 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
 
           <div
             style={{
-              fontSize: '12.5px',
+              fontSize: '12px',
               color: '#94a3b8',
               letterSpacing: '0.6px',
               textTransform: 'uppercase',
@@ -250,12 +209,12 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
             backgroundColor: 'rgba(56, 189, 248, 0.12)',
             border: '1px solid rgba(56, 189, 248, 0.3)',
             borderRadius: '48px',
-            padding: '5px 14px',
-            fontSize: '11px',
+            padding: '4px 12px',
+            fontSize: '10.5px',
             fontWeight: 600,
             color: '#38bdf8',
             letterSpacing: '0.4px',
-            marginTop: '6px',
+            marginTop: '4px',
           }}
         >
           <span
@@ -264,7 +223,7 @@ export const AppRevealSplash: React.FC<AppRevealSplashProps> = ({
               height: '6px',
               borderRadius: '50%',
               backgroundColor: '#38bdf8',
-              boxShadow: '0 0 8px #38bdf8',
+              boxShadow: '0 0 6px #38bdf8',
             }}
           />
           ENTERPRISE VAULT ENCRYPTION • ACTIVE
