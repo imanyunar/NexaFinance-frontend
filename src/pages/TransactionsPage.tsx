@@ -169,11 +169,22 @@ export const TransactionsPage: React.FC = () => {
                       </td>
 
                       <td style={{ padding: '14px 20px', color: '#666666', fontSize: '13px' }}>
-                        {new Date(tx.date).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
+                        <div style={{ fontWeight: 500, color: '#333333' }}>
+                          {new Date(tx.date).toLocaleDateString('id-ID', {
+                            timeZone: 'Asia/Jakarta',
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: '#888888', marginTop: '2px' }}>
+                          {new Date(tx.date).toLocaleTimeString('id-ID', {
+                            timeZone: 'Asia/Jakarta',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          }).replace(/\./g, ':')} WIB
+                        </div>
                       </td>
 
                       <td

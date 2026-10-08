@@ -6,7 +6,7 @@ import { ProfileModal } from '../profile/ProfileModal';
 import { GoogleIcon, Button, Modal, Input } from '../ui';
 
 export const AppShell: React.FC = () => {
-  const { activeWorkspace, refreshData, createTransaction, accounts, loading } = useWorkspace();
+  const { activeWorkspace, refreshData, createTransaction, accounts, categories, loading } = useWorkspace();
   const { user, logout } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -17,6 +17,7 @@ export const AppShell: React.FC = () => {
   const [description, setDescription] = useState('');
   const [sourceAccountId, setSourceAccountId] = useState('');
   const [destinationAccountId, setDestinationAccountId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const formatRupiah = (val: number) => {
@@ -36,13 +37,18 @@ export const AppShell: React.FC = () => {
         type: txType,
         amount: Number(amount),
         description,
+        accountId: sourceAccountId,
         sourceAccountId,
+        toAccountId: txType === 'TRANSFER' ? destinationAccountId : null,
         destinationAccountId: txType === 'TRANSFER' ? destinationAccountId : null,
+        categoryId: txType !== 'TRANSFER' && categoryId ? categoryId : null,
         date: new Date().toISOString(),
+        transactedAt: new Date().toISOString(),
       });
       setShowAddModal(false);
       setAmount('');
       setDescription('');
+      setCategoryId('');
     } catch (err: any) {
       alert('Gagal menambah transaksi: ' + err.message);
     } finally {
@@ -197,6 +203,10 @@ export const AppShell: React.FC = () => {
                 if (accounts.length > 0) {
                   setSourceAccountId(accounts[0].id);
                   if (accounts.length > 1) setDestinationAccountId(accounts[1].id);
+                }
+                const expenseCats = categories.filter((c) => c.type === 'EXPENSE');
+                if (expenseCats.length > 0) {
+                  setCategoryId(expenseCats[0].id);
                 }
                 setShowAddModal(true);
               }}
@@ -516,6 +526,37 @@ export const AppShell: React.FC = () => {
               ))}
             </select>
           </div>
+
+          {/* Category Selector */}
+          {txType !== 'TRANSFER' && (
+            <div className="form-group" style={{ marginBottom: '16px' }}>
+              <label className="form-label" style={{ fontSize: '13px', fontWeight: 600, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+                Kategori {txType === 'EXPENSE' ? 'Pengeluaran' : 'Pemasukan'}
+              </label>
+              <select
+                className="form-select"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 16px',
+                  borderRadius: '16px',
+                  border: '1px solid #e5e5e5',
+                  fontSize: '14px',
+                  backgroundColor: '#ffffff',
+                }}
+              >
+                <option value="">-- Tanpa Kategori Khusus --</option>
+                {categories
+                  .filter((c) => c.type === txType)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
 
           {/* Destination Account for Transfer */}
           {txType === 'TRANSFER' && (
