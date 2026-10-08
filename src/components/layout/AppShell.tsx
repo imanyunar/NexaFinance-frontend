@@ -217,20 +217,22 @@ export const AppShell: React.FC = () => {
           <div className="bg-surface-container-lowest p-space-sm rounded-xl border border-outline-variant/50 shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-tertiary live-dot"></span>
+                <span className={`w-2 h-2 rounded-full ${user?.whatsappNumber ? 'bg-tertiary live-dot' : 'bg-outline'}`}></span>
                 <span className="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider font-semibold">
                   Webhook Sync
                 </span>
               </div>
-              <span className="font-badge-label text-badge-label text-tertiary font-bold bg-tertiary-fixed/30 px-1.5 py-0.5 rounded">
-                2-Arah
+              <span className={`font-badge-label text-badge-label font-bold px-1.5 py-0.5 rounded ${
+                user?.whatsappNumber ? 'text-tertiary bg-tertiary-fixed/30' : 'text-outline bg-surface-container-high'
+              }`}>
+                {user?.whatsappNumber ? '2-Arah' : 'Off'}
               </span>
             </div>
             <p className="font-numeric-table text-numeric-table font-semibold text-on-surface truncate">
-              +62 812-9981-XXXX
+              {user?.whatsappNumber || 'Belum Terhubung'}
             </p>
             <p className="font-body-sm text-body-sm text-on-surface-variant truncate text-[11px] mt-0.5">
-              Sinkronisasi WhatsApp Aktif
+              {user?.whatsappNumber ? 'Sinkronisasi WhatsApp Aktif' : 'Nomor WhatsApp Belum Diatur'}
             </p>
           </div>
 

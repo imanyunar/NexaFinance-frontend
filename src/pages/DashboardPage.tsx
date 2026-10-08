@@ -1,8 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { useAuth } from '../context/AuthContext';
 
 export const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
   const { totalBalance, accounts, transactions, activeWorkspace, loading, deleteTransaction } = useWorkspace();
 
   const formatRupiah = (val: number) => {
@@ -409,8 +411,8 @@ export const DashboardPage: React.FC = () => {
 
             <div className="p-space-sm bg-surface-container-low rounded-lg text-body-sm space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-on-surface-variant">Nomor Gateway:</span>
-                <span className="font-numeric-table font-semibold text-on-surface">+62 812-9981-XXXX</span>
+                <span className="text-on-surface-variant">WhatsApp Terhubung:</span>
+                <span className="font-numeric-table font-semibold text-on-surface">{user?.whatsappNumber || 'Belum Terhubung'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-on-surface-variant">Model Pemroses:</span>
