@@ -160,9 +160,11 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [activeWorkspaceId, selectedPeriod]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) {
+        setLoading(true);
+      }
       setError(null);
       const wsData = await apiFetch<{ workspaces: Workspace[] }>('/workspaces');
       
@@ -207,10 +209,14 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setBudgetSummary(budData.summary || null);
       }
     } catch (err: any) {
-      console.warn('Backend fetch error:', err.message);
+      if (import.meta.env.DEV) {
+        console.warn('Backend fetch error:', err.message);
+      }
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!isSilent) {
+        setLoading(false);
+      }
     }
   }, [activeWorkspaceId, selectedPeriod]);
 
@@ -218,29 +224,89 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     fetchData();
   }, [fetchData]);
 
-  // Transaction CRUD
+  // Transaction CRUD with Zero-Lag Optimistic Updates
   const createTransaction = async (data: any) => {
     if (!activeWorkspace) return;
     const targetAccountId = data.accountId || data.sourceAccountId || accounts[0]?.id;
     if (!targetAccountId) {
       throw new Error('Pilih rekening terlebih dahulu');
     }
+    const amountNum = Number(data.amount) || 0;
+    const txType = data.type || 'EXPENSE';
     const payload = {
-      type: data.type || 'EXPENSE',
+      type: txType,
       accountId: targetAccountId,
       toAccountId: data.toAccountId !== undefined ? data.toAccountId : data.destinationAccountId || null,
       categoryId: data.categoryId || null,
-      amount: Number(data.amount) || 0,
+      amount: amountNum,
       description: data.description || 'Transaksi',
       notes: data.notes || null,
       transactedAt: data.transactedAt || data.date || new Date().toISOString(),
     };
 
-    await apiFetch(`/workspaces/${activeWorkspace.id}/transactions`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    await fetchData();
+    // 1. Optimistic Local State Update (Instant 0ms feedback for user)
+    const sourceAcc = accounts.find((a) => a.id === targetAccountId);
+    const destAcc = payload.toAccountId ? accounts.find((a) => a.id === payload.toAccountId) : null;
+    const cat = payload.categoryId ? categories.find((c) => c.id === payload.categoryId) : null;
+    const tempId = `temp-${Date.now()}`;
+
+    const optimisticTx: Transaction = {
+      id: tempId,
+      workspaceId: activeWorkspace.id,
+      sourceAccountId: targetAccountId,
+      destinationAccountId: payload.toAccountId,
+      categoryId: payload.categoryId,
+      type: txType,
+      amount: amountNum,
+      date: payload.transactedAt,
+      description: payload.description,
+      notes: payload.notes,
+      sourceAccount: sourceAcc,
+      destinationAccount: destAcc,
+      category: cat,
+    };
+
+    setTransactions((prev) => [optimisticTx, ...prev]);
+
+    // Optimistically update account balance
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === targetAccountId) {
+          const delta = txType === 'INCOME' ? amountNum : -amountNum;
+          return { ...acc, balance: acc.balance + delta };
+        }
+        if (txType === 'TRANSFER' && destAcc && acc.id === destAcc.id) {
+          return { ...acc, balance: acc.balance + amountNum };
+        }
+        return acc;
+      })
+    );
+
+    if (txType === 'INCOME') {
+      setTotalBalance((prev) => prev + amountNum);
+    } else if (txType === 'EXPENSE') {
+      setTotalBalance((prev) => prev - amountNum);
+    }
+
+    try {
+      const res = await apiFetch<{ transaction: any }>(`/workspaces/${activeWorkspace.id}/transactions`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (res?.transaction?.id) {
+        setTransactions((prev) =>
+          prev.map((t) => (t.id === tempId ? { ...t, id: res.transaction.id } : t))
+        );
+      }
+      // Re-sync silently in background without blocking or blinking UI
+      void fetchData(true);
+    } catch (err: any) {
+      // Rollback on failure
+      setTransactions((prev) => prev.filter((t) => t.id !== tempId));
+      void fetchData(true);
+      throw err;
+    }
   };
 
   const updateTransaction = async (id: string, data: any) => {
@@ -254,25 +320,32 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       method: 'PUT',
       body: JSON.stringify(payload),
     });
-    await fetchData();
+    void fetchData(true);
   };
 
   const deleteTransaction = async (id: string) => {
     if (!activeWorkspace) return;
-    await apiFetch(`/workspaces/${activeWorkspace.id}/transactions/${id}`, {
-      method: 'DELETE',
-    });
-    await fetchData();
+    // Optimistic remove
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await apiFetch(`/workspaces/${activeWorkspace.id}/transactions/${id}`, {
+        method: 'DELETE',
+      });
+      void fetchData(true);
+    } catch (err: any) {
+      void fetchData(true);
+      throw err;
+    }
   };
 
-  // Account CRUD
+  // Account CRUD with Silent Background Re-sync
   const createAccount = async (data: { name: string; type: string; openingBalance: number; color?: string }) => {
     if (!activeWorkspace) return;
     await apiFetch(`/workspaces/${activeWorkspace.id}/accounts`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    await fetchData();
+    void fetchData(true);
   };
 
   const updateAccount = async (id: string, data: { name?: string; type?: string; color?: string; isArchived?: boolean }) => {
@@ -281,7 +354,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       method: 'PUT',
       body: JSON.stringify(data),
     });
-    await fetchData();
+    void fetchData(true);
   };
 
   const deleteAccount = async (id: string) => {
@@ -289,7 +362,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     await apiFetch(`/workspaces/${activeWorkspace.id}/accounts/${id}`, {
       method: 'DELETE',
     });
-    await fetchData();
+    void fetchData(true);
   };
 
   // Category CRUD

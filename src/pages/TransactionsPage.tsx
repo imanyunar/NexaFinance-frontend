@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useWorkspace, Transaction } from '../context/WorkspaceContext';
-import { Card, Badge, GoogleIcon, Input } from '../components/ui';
+import { Card, Badge, GoogleIcon, Input, TableRowSkeleton } from '../components/ui';
 
 export const TransactionsPage: React.FC = () => {
   const { transactions, deleteTransaction, loading } = useWorkspace();
@@ -112,9 +112,18 @@ export const TransactionsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((tx) => {
-                  const isExpense = tx.type === 'EXPENSE';
-                  const isIncome = tx.type === 'INCOME';
+                {loading && transactions.length === 0 ? (
+                  <>
+                    <TableRowSkeleton />
+                    <TableRowSkeleton />
+                    <TableRowSkeleton />
+                    <TableRowSkeleton />
+                    <TableRowSkeleton />
+                  </>
+                ) : (
+                  filtered.map((tx) => {
+                    const isExpense = tx.type === 'EXPENSE';
+                    const isIncome = tx.type === 'INCOME';
 
                   return (
                     <tr
@@ -220,8 +229,9 @@ export const TransactionsPage: React.FC = () => {
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
+                })
+              )}
+            </tbody>
             </table>
           </div>
         )}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { Card, Badge, GoogleIcon } from '../components/ui';
+import { Card, Badge, GoogleIcon, Skeleton, StatCardSkeleton } from '../components/ui';
 
 export const DashboardPage: React.FC = () => {
-  const { totalBalance, accounts, transactions, activeWorkspace } = useWorkspace();
+  const { totalBalance, accounts, transactions, activeWorkspace, loading } = useWorkspace();
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -22,6 +22,36 @@ export const DashboardPage: React.FC = () => {
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const netSavings = totalIncome - totalExpense;
+
+  if (loading && accounts.length === 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+        <div className="skeleton-card" style={{ padding: '36px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <Skeleton width={200} height={20} borderRadius={48} />
+            <Skeleton width={320} height={32} borderRadius={6} />
+            <Skeleton width={240} height={14} borderRadius={4} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+            <Skeleton width={120} height={14} borderRadius={4} />
+            <Skeleton width={180} height={36} borderRadius={6} />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+          <div className="skeleton-card" style={{ height: '240px' }} />
+          <div className="skeleton-card" style={{ height: '240px' }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>

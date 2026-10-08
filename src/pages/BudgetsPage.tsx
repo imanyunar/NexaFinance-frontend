@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkspace, Budget } from '../context/WorkspaceContext';
-import { Card, Badge, GoogleIcon, Button, Modal, Input } from '../components/ui';
+import { Card, Badge, GoogleIcon, Button, Modal, Input, Skeleton, StatCardSkeleton } from '../components/ui';
 
 export const BudgetsPage: React.FC = () => {
   const {
@@ -13,6 +13,7 @@ export const BudgetsPage: React.FC = () => {
     createOrUpdateBudget,
     deleteBudget,
     createCategory,
+    loading,
   } = useWorkspace();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -216,7 +217,13 @@ export const BudgetsPage: React.FC = () => {
       )}
 
       {/* Budgets Grid */}
-      {budgets.length === 0 ? (
+      {loading && budgets.length === 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div className="skeleton-card" style={{ height: '200px' }} />
+          <div className="skeleton-card" style={{ height: '200px' }} />
+          <div className="skeleton-card" style={{ height: '200px' }} />
+        </div>
+      ) : budgets.length === 0 ? (
         <Card padding="48px 24px">
           <div style={{ textAlign: 'center', color: '#666666' }}>
             <GoogleIcon name="savings" size={44} color="#005caa" />

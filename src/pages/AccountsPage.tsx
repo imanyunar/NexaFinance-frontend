@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useWorkspace, Account } from '../context/WorkspaceContext';
-import { Card, Badge, GoogleIcon, Button, Modal, Input } from '../components/ui';
+import { Card, Badge, GoogleIcon, Button, Modal, Input, Skeleton, AccountCardSkeleton } from '../components/ui';
 
 export const AccountsPage: React.FC = () => {
-  const { accounts, totalBalance, createAccount, updateAccount, deleteAccount } = useWorkspace();
+  const { accounts, totalBalance, createAccount, updateAccount, deleteAccount, loading } = useWorkspace();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -196,7 +196,13 @@ export const AccountsPage: React.FC = () => {
       </div>
 
       {/* Accounts Grid */}
-      {filteredAccounts.length === 0 ? (
+      {loading && accounts.length === 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <AccountCardSkeleton />
+          <AccountCardSkeleton />
+          <AccountCardSkeleton />
+        </div>
+      ) : filteredAccounts.length === 0 ? (
         <Card padding="48px 24px">
           <div style={{ textAlign: 'center', color: '#666666' }}>
             <GoogleIcon name="account_balance" size={40} color="#005caa" />
