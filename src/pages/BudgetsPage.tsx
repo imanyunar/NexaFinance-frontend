@@ -332,7 +332,8 @@ export const BudgetsPage: React.FC = () => {
                       height: '100%',
                       backgroundColor: progressColor,
                       borderRadius: '48px',
-                      transition: 'width 0.4s ease',
+                      transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                      willChange: 'width',
                     }}
                   />
                 </div>

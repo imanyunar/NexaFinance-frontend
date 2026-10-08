@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import { AppShell } from './components/layout/AppShell';
 import { Skeleton } from './components/ui/Skeleton';
-import { AppRevealSplash } from './components/motion/AppRevealSplash';
 
 // Route-based code splitting for maximum Lighthouse Performance
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -79,24 +78,8 @@ const ProtectedLayout: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-  const [showSplash, setShowSplash] = React.useState(() => {
-    try {
-      return !window.sessionStorage.getItem('nexa_splash_seen');
-    } catch {
-      return true;
-    }
-  });
-
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-    try {
-      window.sessionStorage.setItem('nexa_splash_seen', 'true');
-    } catch {}
-  };
-
   return (
     <AuthProvider>
-      {showSplash && <AppRevealSplash onComplete={handleSplashComplete} />}
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>

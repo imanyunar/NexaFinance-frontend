@@ -68,7 +68,8 @@ export const TransactionsPage: React.FC = () => {
                   fontWeight: 600,
                   fontSize: '13px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
+                  willChange: 'background-color, color',
                   fontFamily: "'Open Sans', sans-serif",
                 }}
               >

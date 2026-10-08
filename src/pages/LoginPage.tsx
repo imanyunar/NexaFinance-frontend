@@ -5,40 +5,40 @@ import { GoogleIcon, Button, Input } from '../components/ui';
 
 const HIGHLIGHT_SLIDES = [
   {
-    badge: 'PRESISI INSTITUSIONAL',
-    title: 'Manajemen Arus Kas & Treasury Berakurasi Tinggi',
+    badge: 'MANAJEMEN KAS',
+    title: 'Pantau Saldo & Arus Kas Bisnis Secara Real-Time',
     description:
-      'Pencatatan integer Rupiah tanpa kompromi floating-point drift. Pisahkan kas pribadi dan operasional bisnis dengan isolasi multi-workspace.',
-    metric: '100% Presisi',
-    metricLabel: 'Nol Selisih Saldo',
-    tag: 'Enterprise Treasury',
-  },
-  {
-    badge: 'INTELLIGENT AI ENGINE',
-    title: 'Input Transaksi Natural Tanpa Formulir Rumit',
-    description:
-      'Ketik kalimat santai seperti "Makan siang 35rb bayar bca", kecerdasan AI kami langsung mengekstrak nominal, rekening, dan kategori secara instan.',
-    metric: '< 150ms',
-    metricLabel: 'Kecepatan Proses AI',
-    tag: 'Groq & Gemini Dual-Engine',
-  },
-  {
-    badge: 'WHATSAPP 2-WAY SYNC',
-    title: 'Asisten Keuangan Interaktif Langsung di WhatsApp',
-    description:
-      'Catat pemasukan, belanja, cek saldo kas, dan terima peringatan overlimit anggaran otomatis langsung dari aplikasi WhatsApp Anda 24/7.',
+      'Pencatatan kas dan mutasi multi-rekening yang rapi dan terpusat. Pisahkan keuangan pribadi dan operasional bisnis dalam satu sistem.',
     metric: 'Real-Time',
-    metricLabel: 'Sinkronisasi Cloud Bot',
-    tag: 'Fonnte Gateway 2-Way',
+    metricLabel: 'Sinkronisasi Mutasi',
+    tag: 'Multi-Rekening Bank',
   },
   {
-    badge: 'VISIBILITAS MENYELURUH',
-    title: 'Analitik Pagu Anggaran & Pengawasan Likuiditas',
+    badge: 'PENCATATAN PRAKTIS',
+    title: 'Catat Pengeluaran Harian Semudah Mengetik Pesan',
     description:
-      'Dapatkan visualisasi komprehensif pagu anggaran bulanan, rasio burn rate, dan riwayat mutasi kas dalam antarmuka berkinerja tinggi.',
-    metric: '93+ Score',
-    metricLabel: 'Lighthouse Performance',
-    tag: 'Morgan Stanley Standard',
+      'Cukup ketik transaksi harian seperti belanja atau tagihan dalam bahasa sehari-hari, sistem langsung mengelompokkan kategori dan saldo.',
+    metric: 'Instan',
+    metricLabel: 'Pencatatan Otomatis',
+    tag: 'Kategori Cerdas',
+  },
+  {
+    badge: 'INTEGRASI WHATSAPP',
+    title: 'Kelola Transaksi Finansial Langsung Lewat WhatsApp',
+    description:
+      'Catat mutasi belanja, periksa sisa saldo kas, dan terima ringkasan harian langsung dari obrolan WhatsApp tanpa repot.',
+    metric: '24/7 Siaga',
+    metricLabel: 'Akses WhatsApp Bot',
+    tag: 'Notifikasi Otomatis',
+  },
+  {
+    badge: 'PAGU ANGGARAN',
+    title: 'Kontrol Anggaran Bulanan & Cegah Pengeluaran Berlebih',
+    description:
+      'Tetapkan batas pengeluaran per kategori dan pantau pemakaian secara visual agar cash flow operasional selalu sehat dan terkendali.',
+    metric: '100% Kontrol',
+    metricLabel: 'Transparansi Anggaran',
+    tag: 'Peringatan Limit',
   },
 ];
 
@@ -62,15 +62,15 @@ export const LoginPage: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // Slide autoplay every 4.5 seconds
+  // Slide autoplay every 4.8 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setIsTransitioning(true);
       setTimeout(() => {
         setCurrentSlide((prev) => (prev + 1) % HIGHLIGHT_SLIDES.length);
         setIsTransitioning(false);
-      }, 250);
-    }, 4500);
+      }, 220);
+    }, 4800);
 
     return () => clearInterval(timer);
   }, []);
@@ -81,7 +81,7 @@ export const LoginPage: React.FC = () => {
     setTimeout(() => {
       setCurrentSlide(idx);
       setIsTransitioning(false);
-    }, 200);
+    }, 220);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,18 +110,18 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="login-root-container">
       {/* ============================================================ */}
-      {/* SEBELAH KIRI / ATAS: Showcase Brand & Teks Animasi Dinamis   */}
+      {/* SEBELAH KIRI (DESKTOP) / ATAS COMPACT (MOBILE): Showcase Brand */}
       {/* ============================================================ */}
       <div className="login-showcase-panel">
         {/* Ambient Lights */}
         <div className="ambient-orb-top" />
         <div className="ambient-orb-bottom" />
 
-        {/* Top Header: Logo + Badge */}
+        {/* Top Header: Brand Logo */}
         <div className="showcase-header">
           <div className="showcase-brand">
             <div className="showcase-logo-box">
-              <svg width="24" height="24" viewBox="0 0 128 128" fill="none">
+              <svg width="22" height="22" viewBox="0 0 128 128" fill="none">
                 <path d="M34 32 H48 V96 H34 Z" fill="#ffffff" />
                 <path d="M80 32 H94 V96 H80 Z" fill="#ffffff" />
                 <path d="M42 32 L86 96 H72 L34 40 Z" fill="#7dd3fc" />
@@ -133,20 +133,15 @@ export const LoginPage: React.FC = () => {
                 Nexa<span>Finance</span>
               </div>
               <div className="showcase-brand-subtitle">
-                Institutional Wealth OS
+                Manajemen Kas & Treasury
               </div>
             </div>
           </div>
-
-          <div className="showcase-security-pill">
-            <span className="security-dot" />
-            <span>AES-256 BANK ENCRYPTION</span>
-          </div>
         </div>
 
-        {/* Dynamic Animated Text Section */}
+        {/* Desktop Feature Showcase */}
         <div className="showcase-content">
-          <div className={`showcase-slide-wrapper ${isTransitioning ? 'transitioning' : ''}`}>
+          <div className={'showcase-slide-wrapper ' + (isTransitioning ? 'transitioning' : '')}>
             <div className="showcase-badge">
               {slide.badge}
             </div>
@@ -167,7 +162,7 @@ export const LoginPage: React.FC = () => {
 
               <div className="metric-card metric-card-secondary">
                 <div className="metric-tag">{slide.tag}</div>
-                <div className="metric-sub">Active Infrastructure</div>
+                <div className="metric-sub">Sistem Terintegrasi</div>
               </div>
             </div>
           </div>
@@ -179,40 +174,43 @@ export const LoginPage: React.FC = () => {
                 key={idx}
                 type="button"
                 onClick={() => handleSelectSlide(idx)}
-                title={`Buka slide ${idx + 1}`}
-                className={`dot-button ${currentSlide === idx ? 'active' : ''}`}
+                title={'Buka ringkasan ' + (idx + 1)}
+                className={'dot-button ' + (currentSlide === idx ? 'active' : '')}
               />
             ))}
           </div>
         </div>
 
-        {/* Bottom Proof Strip (Visible on Desktop / Tablet) */}
+        {/* Mobile-only Compact Rotating Tagline */}
+        <div className="mobile-showcase-bar">
+          <div className={'mobile-slide-text ' + (isTransitioning ? 'transitioning' : '')}>
+            <span className="mobile-badge">{slide.badge}</span>
+            <span className="mobile-title">{slide.title}</span>
+          </div>
+        </div>
+
+        {/* Bottom Proof Strip (Visible on Desktop) */}
         <div className="showcase-footer">
           <div className="footer-cert">
-            <GoogleIcon name="verified" size={16} color="#38bdf8" />
-            <span>Sertifikasi FinTech Institusional Berkecepatan Tinggi</span>
+            <GoogleIcon name="lock" size={15} color="#38bdf8" />
+            <span>Koneksi Aman Terenkripsi SSL/TLS 256-bit</span>
           </div>
           <div>© {new Date().getFullYear()} NexaFinance Inc.</div>
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* SEBELAH KANAN / BAWAH: Formulir Masuk (Login Form)            */}
+      {/* SEBELAH KANAN (DESKTOP) / KARTU UTAMA (MOBILE): Login Form    */}
       {/* ============================================================ */}
       <div className="login-form-panel">
         <div className="login-form-card">
           {/* Header */}
           <div className="form-header">
-            <div className="form-auth-pill">
-              <GoogleIcon name="lock" size={13} color="#005caa" />
-              <span>PORTAL AUTENTIKASI AMAN</span>
-            </div>
-
             <h1 className="form-main-title">
               Masuk ke Akun Anda
             </h1>
             <p className="form-sub-title">
-              Masukkan email dan kata sandi untuk mengakses workspace keuangan Anda.
+              Masukkan email dan kata sandi untuk mengelola keuangan Anda.
             </p>
           </div>
 
@@ -252,7 +250,7 @@ export const LoginPage: React.FC = () => {
                 title={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                 style={{
                   position: 'absolute',
-                  right: '14px',
+                  right: '12px',
                   top: '38px',
                   background: 'transparent',
                   border: 'none',
@@ -260,7 +258,9 @@ export const LoginPage: React.FC = () => {
                   color: '#64748b',
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '4px',
+                  padding: '6px',
+                  borderRadius: '50%',
+                  transition: 'color 0.15s ease',
                 }}
               >
                 <GoogleIcon name={showPassword ? 'visibility_off' : 'visibility'} size={18} color="#64748b" />
@@ -282,7 +282,7 @@ export const LoginPage: React.FC = () => {
                 href="#forgot"
                 onClick={(e) => {
                   e.preventDefault();
-                  alert('Silakan hubungi administrator workspace Anda untuk pemulihan kata sandi.');
+                  alert('Silakan hubungi administrator workspace untuk pemulihan kata sandi.');
                 }}
                 className="forgot-link"
               >
@@ -301,38 +301,38 @@ export const LoginPage: React.FC = () => {
                 width: '100%',
                 marginTop: '8px',
                 borderRadius: '48px',
-                padding: '13px 32px',
+                padding: '13px 28px',
                 fontSize: '15px',
                 fontWeight: 700,
                 boxShadow: '0 4px 14px rgba(0, 92, 170, 0.25)',
               }}
             >
-              {loading ? 'Memverifikasi...' : 'Masuk ke Portal Keuangan'}
+              {loading ? 'Memverifikasi...' : 'Masuk ke NexaFinance'}
             </Button>
           </form>
 
           {/* Quick Demo Helper */}
           <div className="demo-fill-card">
-            <span className="demo-text">Ingin tes cepat akun admin?</span>
+            <span className="demo-text">Akun Demo Cepat:</span>
             <button
               type="button"
               onClick={() => handleFillDemo('iman@gmail.com')}
               className="demo-btn"
             >
-              Isi Otomatis
+              Isi Akun Admin
             </button>
           </div>
 
           {/* Security Notice */}
           <div className="form-security-footer">
-            <GoogleIcon name="shield" size={15} color="#005caa" />
-            <span>Dilindungi Protokol Zero-Trust & Neon Cloud Database</span>
+            <GoogleIcon name="verified_user" size={15} color="#005caa" />
+            <span>Kerahasiaan data terjamin dengan enkripsi end-to-end</span>
           </div>
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* SCOPED UNIVERSAL RESPONSIVE CSS                               */}
+      {/* 60FPS HARDWARE-ACCELERATED UNIVERSAL RESPONSIVE CSS          */}
       {/* ============================================================ */}
       <style>{`
         .login-root-container {
@@ -340,66 +340,72 @@ export const LoginPage: React.FC = () => {
           min-height: 100dvh;
           display: flex;
           flex-direction: column;
-          background-color: #001428;
+          background-color: #f8fafc;
           font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
           overflow-x: hidden;
           width: 100%;
+          margin: 0;
+          padding: 0;
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 960px) {
           .login-root-container {
             flex-direction: row;
           }
         }
 
-        /* SHOWCASE PANEL */
+        /* -------------------------------------------------------------
+         * SHOWCASE PANEL (LEFT DESKTOP, TOP COMPACT MOBILE)
+         * ----------------------------------------------------------- */
         .login-showcase-panel {
           position: relative;
-          background: linear-gradient(145deg, #001224 0%, #002244 50%, #003666 100%);
+          background: linear-gradient(145deg, #001428 0%, #002244 55%, #003666 100%);
           color: #ffffff;
           overflow: hidden;
           display: flex;
           flex-direction: column;
           justifyContent: space-between;
-          padding: 24px 20px;
+          padding: 18px 20px;
           flex: 0 0 auto;
+          box-shadow: 0 4px 20px rgba(0, 20, 40, 0.2);
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 600px) {
           .login-showcase-panel {
-            padding: 36px 40px;
+            padding: 24px 28px;
           }
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 960px) {
           .login-showcase-panel {
-            flex: 1 1 54%;
+            flex: 1 1 52%;
             padding: 48px 56px;
             min-height: 100vh;
             min-height: 100dvh;
+            box-shadow: none;
           }
         }
 
         .ambient-orb-top {
           position: absolute;
-          top: -15%;
-          left: -10%;
+          top: -20%;
+          left: -15%;
           width: 480px;
           height: 480px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(0, 92, 170, 0) 70%);
+          background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(0, 92, 170, 0) 70%);
           pointer-events: none;
           z-index: 1;
         }
 
         .ambient-orb-bottom {
           position: absolute;
-          bottom: -10%;
-          right: -10%;
-          width: 420px;
-          height: 420px;
+          bottom: -15%;
+          right: -15%;
+          width: 440px;
+          height: 440px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(0, 92, 170, 0.35) 0%, rgba(0, 20, 40, 0) 70%);
+          background: radial-gradient(circle, rgba(0, 92, 170, 0.25) 0%, rgba(0, 20, 40, 0) 70%);
           pointer-events: none;
           z-index: 1;
         }
@@ -410,8 +416,7 @@ export const LoginPage: React.FC = () => {
           justifyContent: space-between;
           position: relative;
           z-index: 2;
-          gap: 12px;
-          flex-wrap: wrap;
+          width: 100%;
         }
 
         .showcase-brand {
@@ -421,32 +426,39 @@ export const LoginPage: React.FC = () => {
         }
 
         .showcase-logo-box {
-          width: 40px;
-          height: 40px;
+          width: 38px;
+          height: 38px;
           border-radius: 12px;
           background: linear-gradient(135deg, #005caa, #0284c7);
           display: flex;
           align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
-          border: 1.5px solid rgba(56, 189, 248, 0.4);
+          justifyContent: center;
+          box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+          border: 1px solid rgba(56, 189, 248, 0.35);
           flex-shrink: 0;
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 960px) {
           .showcase-logo-box {
             width: 44px;
             height: 44px;
-            border-radius: 13px;
+            border-radius: 14px;
           }
         }
 
         .showcase-brand-name {
-          font-size: 19px;
+          font-size: 18px;
           font-weight: 800;
           letter-spacing: -0.3px;
           font-family: 'Plus Jakarta Sans', sans-serif;
           color: #ffffff;
+          line-height: 1.2;
+        }
+
+        @media (min-width: 960px) {
+          .showcase-brand-name {
+            font-size: 20px;
+          }
         }
 
         .showcase-brand-name span {
@@ -454,58 +466,93 @@ export const LoginPage: React.FC = () => {
         }
 
         .showcase-brand-subtitle {
-          font-size: 10.5px;
+          font-size: 11px;
           color: #94a3b8;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          font-weight: 600;
+          letter-spacing: 0.3px;
+          font-weight: 500;
         }
 
-        .showcase-security-pill {
-          display: inline-flex;
+        /* Desktop Content: Visible only on tablet/desktop >= 960px */
+        .showcase-content {
+          display: none;
+        }
+
+        @media (min-width: 960px) {
+          .showcase-content {
+            display: block;
+            position: relative;
+            z-index: 2;
+            margin: 40px 0;
+          }
+        }
+
+        /* Mobile Showcase Bar: Visible only on screens < 960px */
+        .mobile-showcase-bar {
+          display: block;
+          position: relative;
+          z-index: 2;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (min-width: 960px) {
+          .mobile-showcase-bar {
+            display: none;
+          }
+        }
+
+        .mobile-slide-text {
+          display: flex;
           align-items: center;
-          gap: 7px;
-          padding: 5px 12px;
-          border-radius: 30px;
-          background-color: rgba(56, 189, 248, 0.1);
-          border: 1px solid rgba(56, 189, 248, 0.25);
-          font-size: 10.5px;
-          font-weight: 600;
-          color: #38bdf8;
+          gap: 8px;
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+          transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+          backface-visibility: hidden;
+        }
+
+        .mobile-slide-text.transitioning {
+          opacity: 0;
+          transform: translate3d(0, 4px, 0);
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 1, 1), transform 0.2s cubic-bezier(0.4, 0, 1, 1);
+        }
+
+        .mobile-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 4px;
+          background-color: rgba(56, 189, 248, 0.18);
+          color: #7dd3fc;
+          font-size: 9.5px;
+          font-weight: 700;
           letter-spacing: 0.4px;
           white-space: nowrap;
         }
 
-        .security-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background-color: #38bdf8;
-          box-shadow: 0 0 8px #38bdf8;
+        .mobile-title {
+          font-size: 12px;
+          color: #e2e8f0;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .showcase-content {
-          position: relative;
-          z-index: 2;
-          margin: 20px 0 16px;
-          max-width: 620px;
-        }
-
-        @media (min-width: 1024px) {
-          .showcase-content {
-            margin: 48px 0;
-          }
-        }
-
+        /* 60FPS GPU Crossfade for Desktop Slide */
         .showcase-slide-wrapper {
           opacity: 1;
           transform: translate3d(0, 0, 0);
-          transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+          backface-visibility: hidden;
         }
 
         .showcase-slide-wrapper.transitioning {
           opacity: 0;
           transform: translate3d(0, 10px, 0);
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 1, 1), transform 0.2s cubic-bezier(0.4, 0, 1, 1);
         }
 
         .showcase-badge {
@@ -514,81 +561,61 @@ export const LoginPage: React.FC = () => {
           border-radius: 6px;
           background-color: rgba(56, 189, 248, 0.15);
           color: #7dd3fc;
-          font-size: 10px;
+          font-size: 10.5px;
           font-weight: 700;
-          letter-spacing: 1px;
-          margin-bottom: 12px;
-          border: 1px solid rgba(56, 189, 248, 0.3);
+          letter-spacing: 0.8px;
+          margin-bottom: 14px;
+          border: 1px solid rgba(56, 189, 248, 0.25);
         }
 
         .showcase-title {
-          font-size: clamp(20px, 4vw, 34px);
+          font-size: clamp(22px, 3.2vw, 32px);
           font-weight: 800;
           line-height: 1.25;
-          margin: 0 0 12px;
+          margin: 0 0 14px;
           font-family: 'Plus Jakarta Sans', sans-serif;
           letter-spacing: -0.5px;
           color: #ffffff;
         }
 
         .showcase-desc {
-          font-size: clamp(13px, 1.8vw, 15px);
+          font-size: 14.5px;
           line-height: 1.6;
           color: #cbd5e1;
-          margin: 0 0 20px;
-          max-width: 540px;
-        }
-
-        @media (max-width: 767px) {
-          .showcase-desc {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin-bottom: 14px;
-          }
+          margin: 0 0 24px;
+          max-width: 520px;
         }
 
         .showcase-metrics-row {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
           flex-wrap: wrap;
         }
 
-        @media (min-width: 768px) {
-          .showcase-metrics-row {
-            gap: 16px;
-          }
-        }
-
         .metric-card {
-          padding: 10px 16px;
+          padding: 12px 18px;
           border-radius: 14px;
           background-color: rgba(0, 20, 40, 0.65);
-          backdrop-filter: blur(10px);
-        }
-
-        @media (min-width: 768px) {
-          .metric-card {
-            padding: 14px 20px;
-            border-radius: 16px;
-          }
+          backdrop-filter: blur(8px);
+          will-change: transform;
+          backface-visibility: hidden;
+          transform: translate3d(0, 0, 0);
         }
 
         .metric-card-primary {
           border: 1px solid rgba(56, 189, 248, 0.25);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .metric-val {
-          font-size: clamp(17px, 2.5vw, 22px);
+          font-size: 20px;
           font-weight: 800;
           color: #38bdf8;
         }
 
         .metric-lbl {
-          font-size: 10.5px;
+          font-size: 11px;
           color: #94a3b8;
           margin-top: 2px;
           font-weight: 600;
@@ -598,20 +625,14 @@ export const LoginPage: React.FC = () => {
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        @media (max-width: 480px) {
-          .metric-card-secondary {
-            display: none;
-          }
-        }
-
         .metric-tag {
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 700;
           color: #ffffff;
         }
 
         .metric-sub {
-          font-size: 10px;
+          font-size: 10.5px;
           color: #64748b;
           margin-top: 2px;
         }
@@ -620,13 +641,7 @@ export const LoginPage: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 7px;
-          margin-top: 18px;
-        }
-
-        @media (min-width: 1024px) {
-          .showcase-dots {
-            margin-top: 36px;
-          }
+          margin-top: 32px;
         }
 
         .dot-button {
@@ -635,43 +650,46 @@ export const LoginPage: React.FC = () => {
           border: none;
           cursor: pointer;
           padding: 0;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease;
           width: 8px;
           background-color: rgba(255, 255, 255, 0.25);
+          will-change: width, background-color;
         }
 
         .dot-button.active {
-          width: 28px;
+          width: 26px;
           background-color: #38bdf8;
         }
 
         .showcase-footer {
-          position: relative;
-          z-index: 2;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
-          padding-top: 16px;
-          display: flex;
-          align-items: center;
-          justifyContent: space-between;
-          font-size: 11.5px;
-          color: #94a3b8;
-          flex-wrap: wrap;
-          gap: 8px;
+          display: none;
         }
 
-        @media (max-width: 767px) {
+        @media (min-width: 960px) {
           .showcase-footer {
-            display: none;
+            display: flex;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 16px;
+            align-items: center;
+            justifyContent: space-between;
+            font-size: 11.5px;
+            color: #94a3b8;
+            flex-wrap: wrap;
+            gap: 8px;
           }
         }
 
         .footer-cert {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
         }
 
-        /* FORM PANEL */
+        /* -------------------------------------------------------------
+         * FORM PANEL (RIGHT DESKTOP, MAIN VIEW MOBILE)
+         * ----------------------------------------------------------- */
         .login-form-panel {
           flex: 1 1 auto;
           background-color: #ffffff;
@@ -679,21 +697,21 @@ export const LoginPage: React.FC = () => {
           flex-direction: column;
           align-items: center;
           justifyContent: center;
-          padding: 32px 20px;
+          padding: 28px 18px;
           position: relative;
           width: 100%;
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 600px) {
           .login-form-panel {
-            padding: 44px 32px;
+            padding: 40px 32px;
           }
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 960px) {
           .login-form-panel {
-            flex: 1 1 46%;
-            padding: 48px 40px;
+            flex: 1 1 48%;
+            padding: 48px 48px;
             min-height: 100vh;
             min-height: 100dvh;
           }
@@ -701,39 +719,20 @@ export const LoginPage: React.FC = () => {
 
         .login-form-card {
           width: 100%;
-          max-width: 440px;
+          max-width: 400px;
         }
 
         .form-header {
           margin-bottom: 24px;
         }
 
-        @media (min-width: 768px) {
-          .form-header {
-            margin-bottom: 28px;
-          }
-        }
-
-        .form-auth-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 3px 10px;
-          border-radius: 6px;
-          background-color: #e8f2fa;
-          color: #005caa;
-          font-size: 11px;
-          font-weight: 700;
-          margin-bottom: 10px;
-        }
-
         .form-main-title {
-          font-size: clamp(22px, 3vw, 28px);
+          font-size: clamp(22px, 3.5vw, 26px);
           font-weight: 800;
           color: #001428;
           margin: 0 0 6px;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          letter-spacing: -0.5px;
+          letter-spacing: -0.4px;
         }
 
         .form-sub-title {
@@ -744,42 +743,43 @@ export const LoginPage: React.FC = () => {
         }
 
         .form-error-alert {
+          margin-bottom: 18px;
+          padding: 11px 14px;
+          border-radius: 12px;
+          background-color: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+          font-size: 13px;
           display: flex;
           align-items: center;
-          gap: 10px;
-          background-color: #fef2f2;
-          border: 1px solid #fee2e2;
-          border-radius: 12px;
-          padding: 11px 14px;
-          color: #b91c1c;
-          font-size: 12.5px;
-          margin-bottom: 20px;
+          gap: 9px;
         }
 
         .login-form {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 4px;
+        }
+
+        .login-form input {
+          font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
         }
 
         .form-aux-row {
           display: flex;
           align-items: center;
           justifyContent: space-between;
+          margin: 6px 0 16px;
           font-size: 13px;
-          margin-top: -4px;
-          flex-wrap: wrap;
-          gap: 8px;
         }
 
         .remember-label {
-          display: inline-flex;
+          display: flex;
           align-items: center;
           gap: 8px;
           cursor: pointer;
+          color: #334155;
           user-select: none;
-          color: #475569;
-          font-size: 13px;
         }
 
         .checkbox-input {
@@ -792,52 +792,65 @@ export const LoginPage: React.FC = () => {
         .forgot-link {
           color: #005caa;
           font-weight: 600;
-          font-size: 13px;
           text-decoration: none;
+          transition: color 0.15s ease;
+        }
+
+        .forgot-link:hover {
+          color: #00407a;
+          text-decoration: underline;
         }
 
         .demo-fill-card {
-          margin-top: 20px;
-          padding: 10px 14px;
+          margin-top: 22px;
+          padding: 11px 14px;
           border-radius: 12px;
-          background-color: #f8fafc;
-          border: 1px dashed #cbd5e1;
+          background-color: #f0f6fa;
+          border: 1px dashed #b8d5ed;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          font-size: 12px;
-          flex-wrap: wrap;
-          gap: 6px;
+          justifyContent: space-between;
+          gap: 10px;
         }
 
         .demo-text {
-          color: #64748b;
+          font-size: 12.5px;
+          color: #003666;
+          font-weight: 500;
         }
 
         .demo-btn {
-          border: none;
-          background: transparent;
+          background-color: #ffffff;
+          border: 1px solid #005caa;
           color: #005caa;
-          font-weight: 700;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 6px;
           font-size: 12px;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 20px;
+          cursor: pointer;
+          transition: background-color 0.15s ease, color 0.15s ease;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .demo-btn:hover {
+          background-color: #005caa;
+          color: #ffffff;
         }
 
         .form-security-footer {
-          text-align: center;
-          margin-top: 28px;
-          padding-top: 18px;
-          border-top: 1px solid #f1f5f9;
-          font-size: 11.5px;
-          color: #94a3b8;
+          margin-top: 24px;
           display: flex;
           align-items: center;
-          justify-content: center;
+          justifyContent: center;
           gap: 6px;
+          font-size: 11.5px;
+          color: #64748b;
+          text-align: center;
         }
       `}</style>
     </div>
   );
 };
+
+export default LoginPage;

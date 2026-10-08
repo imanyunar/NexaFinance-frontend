@@ -141,6 +141,7 @@ export const AppShell: React.FC = () => {
             {/* Workspace Selector Badge */}
             {activeWorkspace && (
               <div
+                className="hide-on-mobile"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -175,6 +176,7 @@ export const AppShell: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* WhatsApp Integration Status */}
             <div
+              className="hide-on-mobile"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -241,7 +243,8 @@ export const AppShell: React.FC = () => {
                   cursor: 'pointer',
                   color: '#000000',
                   boxShadow: 'rgba(112, 144, 176, 0.08) 0px 2px 8px 0px',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
+                  willChange: 'transform',
                 }}
               >
                 <div
@@ -260,7 +263,7 @@ export const AppShell: React.FC = () => {
                 >
                   {initials}
                 </div>
-                <span style={{ fontSize: '13px', fontWeight: 600 }}>{user?.name || 'Iman Azizi'}</span>
+                <span className="hide-on-mobile" style={{ fontSize: '13px', fontWeight: 600 }}>{user?.name || 'Iman Azizi'}</span>
                 <GoogleIcon name="expand_more" size={16} color="#666666" />
               </button>
 
@@ -281,6 +284,10 @@ export const AppShell: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
+                    animation: 'modalSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                    willChange: 'transform, opacity',
+                    backfaceVisibility: 'hidden',
+                    transform: 'translate3d(0, 0, 0)',
                   }}
                   onClick={() => setShowDropdown(false)}
                 >
@@ -344,6 +351,7 @@ export const AppShell: React.FC = () => {
         {/* Secondary Navigation Bar (Clean Pills with 48px border-radius) */}
         <div style={{ backgroundColor: '#ffffff', borderTop: '1px solid #f0f0f0' }}>
           <div
+            className="nav-scroll-container"
             style={{
               maxWidth: '1360px',
               margin: '0 auto',
@@ -369,7 +377,8 @@ export const AppShell: React.FC = () => {
                   color: isActive ? '#005caa' : '#666666',
                   backgroundColor: isActive ? '#e8f2fa' : 'transparent',
                   border: isActive ? '1px solid #c3ddf2' : '1px solid transparent',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+                  willChange: 'background-color, color',
                   whiteSpace: 'nowrap',
                   textDecoration: 'none',
                   fontFamily: "'Open Sans', sans-serif",
@@ -434,7 +443,7 @@ export const AppShell: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               }}
             >
               <GoogleIcon name="arrow_outward" size={16} color={txType === 'EXPENSE' ? '#c5221f' : '#666666'} />
@@ -457,7 +466,7 @@ export const AppShell: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               }}
             >
               <GoogleIcon name="south_west" size={16} color={txType === 'INCOME' ? '#137333' : '#666666'} />
@@ -480,7 +489,7 @@ export const AppShell: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               }}
             >
               <GoogleIcon name="swap_horiz" size={16} color={txType === 'TRANSFER' ? '#005caa' : '#666666'} />

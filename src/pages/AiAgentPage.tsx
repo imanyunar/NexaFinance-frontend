@@ -837,7 +837,7 @@ export const AiAgentPage: React.FC = () => {
               color: '#000000',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -994,7 +994,7 @@ export const AiAgentPage: React.FC = () => {
                               textDecoration: 'none',
                               fontWeight: 600,
                               fontFamily: "'Open Sans', sans-serif",
-                              transition: 'all 0.15s ease',
+                              transition: 'background-color 0.15s ease, border-color 0.15s ease',
                               boxShadow: '0 1px 3px rgba(0, 92, 170, 0.08)',
                             }}
                             onMouseOver={(e) => {
@@ -1773,7 +1773,7 @@ export const AiAgentPage: React.FC = () => {
                 color: modalSource === 'GOOGLE_WEB' ? '#005caa' : '#666666',
                 cursor: 'pointer',
                 fontFamily: "'Open Sans', sans-serif",
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               }}
             >
               Google Berita Ekonomi
@@ -1792,7 +1792,7 @@ export const AiAgentPage: React.FC = () => {
                 color: modalSource === 'DIRECT_URL' ? '#005caa' : '#666666',
                 cursor: 'pointer',
                 fontFamily: "'Open Sans', sans-serif",
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
               }}
             >
               URL Website Spesifik

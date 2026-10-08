@@ -47,13 +47,15 @@ export const Modal: React.FC<ModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
         backdropFilter: 'blur(3px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         padding: '20px',
+        animation: 'modalBackdropFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'opacity',
       }}
     >
       <div
@@ -71,6 +73,9 @@ export const Modal: React.FC<ModalProps> = ({
           flexDirection: 'column',
           overflow: 'hidden',
           animation: 'modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+          transform: 'translate3d(0, 0, 0)',
         }}
       >
         {/* Header */}
