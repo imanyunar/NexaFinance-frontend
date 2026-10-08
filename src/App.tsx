@@ -12,6 +12,7 @@ const BudgetsPage = lazy(() => import('./pages/BudgetsPage').then((m) => ({ defa
 const AccountsPage = lazy(() => import('./pages/AccountsPage').then((m) => ({ default: m.AccountsPage })));
 const AiAgentPage = lazy(() => import('./pages/AiAgentPage').then((m) => ({ default: m.AiAgentPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('./pages/RegisterPage').then((m) => ({ default: m.RegisterPage })));
 
 const PageFallback: React.FC = () => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '12px 0' }}>
@@ -84,6 +85,7 @@ export const App: React.FC = () => {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route element={<ProtectedLayout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
