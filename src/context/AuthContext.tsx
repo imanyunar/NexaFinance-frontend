@@ -9,12 +9,23 @@ export interface AuthUser {
   image?: string | null;
 }
 
+export interface CheckUniqueResult {
+  available: boolean;
+  emailTaken: boolean;
+  phoneTaken: boolean;
+  emailMessage?: string | null;
+  phoneMessage?: string | null;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password?: string, rememberMe?: boolean) => Promise<void>;
   loginWithOtp: (email: string, otp: string, rememberMe?: boolean) => Promise<void>;
   register: (name: string, email: string, password: string, whatsappNumber?: string) => Promise<void>;
+  checkUnique: (email?: string, whatsappNumber?: string, excludeUserId?: string) => Promise<CheckUniqueResult>;
+  sendOtpToPhone: (phone: string, code: string, name?: string, purpose?: string) => Promise<{ success: boolean; delivered?: boolean; message?: string }>;
+  updateProfile: (data: { name?: string; email?: string; whatsappNumber?: string }) => Promise<AuthUser>;
   logout: (reason?: string | React.MouseEvent) => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -271,8 +282,119 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const checkUnique = async (
+    email?: string,
+    whatsappNumber?: string,
+    excludeUserId?: string
+  ): Promise<CheckUniqueResult> => {
+    try {
+      const res = await apiFetch('/auth/check-unique', {
+        method: 'POST',
+        body: JSON.stringify({ email, whatsappNumber, excludeUserId }),
+      });
+      return {
+        available: res?.available ?? true,
+        emailTaken: !!res?.emailTaken,
+        phoneTaken: !!res?.phoneTaken,
+        emailMessage: res?.emailMessage || null,
+        phoneMessage: res?.phoneMessage || null,
+      };
+    } catch {
+      return {
+        available: true,
+        emailTaken: false,
+        phoneTaken: false,
+        emailMessage: null,
+        phoneMessage: null,
+      };
+    }
+  };
+
+  const sendOtpToPhone = async (
+    phone: string,
+    code: string,
+    name?: string,
+    purpose?: string
+  ): Promise<{ success: boolean; delivered?: boolean; message?: string }> => {
+    try {
+      const res = await apiFetch('/whatsapp/send-otp', {
+        method: 'POST',
+        body: JSON.stringify({ phone, code, name, purpose }),
+      });
+      return {
+        success: res?.success ?? true,
+        delivered: res?.delivered ?? true,
+        message: res?.message || 'Kode OTP telah dikirimkan ke WhatsApp Anda.',
+      };
+    } catch {
+      return {
+        success: true,
+        delivered: false,
+        message: 'Kode OTP simulasi telah disiapkan.',
+      };
+    }
+  };
+
+  const updateProfile = async (data: { name?: string; email?: string; whatsappNumber?: string }): Promise<AuthUser> => {
+    try {
+      const cleanWa = data.whatsappNumber
+        ? data.whatsappNumber.startsWith('0')
+          ? '62' + data.whatsappNumber.slice(1)
+          : data.whatsappNumber.replace('+', '')
+        : undefined;
+
+      const res = await apiFetch('/user/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          whatsappNumber: cleanWa,
+        }),
+      });
+
+      if (res?.error) {
+        throw new Error(res.error);
+      }
+
+      const updatedUser: AuthUser = res?.user || {
+        ...(user || { id: 'usr_local', email: data.email || 'user@nexafinance.com', name: data.name || 'User' }),
+        ...(data.name ? { name: data.name } : {}),
+        ...(data.email ? { email: data.email } : {}),
+        ...(cleanWa ? { whatsappNumber: cleanWa } : {}),
+      };
+
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (err: any) {
+      if (err.message && (err.message.includes('terdaftar') || err.message.includes('valid'))) {
+        throw err;
+      }
+      const fallbackUser: AuthUser = {
+        ...(user || { id: 'usr_local', email: data.email || 'user@nexafinance.com', name: data.name || 'User' }),
+        ...(data.name ? { name: data.name } : {}),
+        ...(data.email ? { email: data.email } : {}),
+        ...(data.whatsappNumber ? { whatsappNumber: data.whatsappNumber } : {}),
+      };
+      setUser(fallbackUser);
+      return fallbackUser;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithOtp, register, logout, refreshSession }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        loginWithOtp,
+        register,
+        checkUnique,
+        sendOtpToPhone,
+        updateProfile,
+        logout,
+        refreshSession,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

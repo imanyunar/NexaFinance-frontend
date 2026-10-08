@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, register } = useAuth();
+  const { user, register, checkUnique, sendOtpToPhone } = useAuth();
 
   // Registration Step State ('form' -> 'otp')
   const [step, setStep] = useState<'form' | 'otp'>('form');
@@ -16,7 +16,6 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [sendWaSync, setSendWaSync] = useState(true);
 
   // OTP State (6 Digits)
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
@@ -55,13 +54,22 @@ export const RegisterPage: React.FC = () => {
     };
   }, [step, countdown]);
 
-  // Step 1: Submit Form & Trigger Email OTP Dispatch
+  // Step 1: Submit Form & Trigger Phone (WhatsApp) OTP Dispatch
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!name.trim()) {
       setError('Nama lengkap atau nama bisnis wajib diisi.');
+      return;
+    }
+    if (!whatsappNumber.trim()) {
+      setError('Nomor WhatsApp wajib diisi untuk pengiriman kode verifikasi OTP.');
+      return;
+    }
+    const cleanDigits = whatsappNumber.replace(/\D/g, '');
+    if (cleanDigits.length < 8) {
+      setError('Nomor WhatsApp tidak valid (minimal 8 digit angka).');
       return;
     }
     if (!email.trim() || !email.includes('@')) {
@@ -80,42 +88,49 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Generate realistic 6-digit OTP
+      // 1. Cek apakah email dan nomor sudah pernah digunakan sebelumnya
+      const uniqueCheck = await checkUnique(email.trim(), whatsappNumber.trim());
+      if (!uniqueCheck.available) {
+        if (uniqueCheck.emailTaken) {
+          setError(uniqueCheck.emailMessage || 'Alamat email ini sudah pernah digunakan sebelumnya. Silakan gunakan email lain atau masuk.');
+          setLoading(false);
+          return;
+        }
+        if (uniqueCheck.phoneTaken) {
+          setError(uniqueCheck.phoneMessage || 'Nomor WhatsApp ini sudah pernah digunakan sebelumnya. Silakan gunakan nomor lain.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 2. Generate 6-digit OTP & Kirim ke nomor WhatsApp yang didaftarkan
       const generatedCode = String(Math.floor(100000 + Math.random() * 900000));
       setActiveOtpCode(generatedCode);
       setOtp(['', '', '', '', '', '']);
       setCountdown(45);
       setCanResend(false);
 
-      // Simulate sending to email & WhatsApp
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // Dispatch OTP ke WhatsApp nomor tujuan
+      await sendOtpToPhone(whatsappNumber.trim(), generatedCode, name.trim(), 'register');
 
       setStep('otp');
 
-      // Toast notification
-      if (sendWaSync && whatsappNumber) {
-        setNotificationToast({
-          channel: 'wa',
-          title: 'WhatsApp Bot Sync',
-          body: `Halo ${name}! Kode verifikasi email akun NexaFinance Anda adalah: ${generatedCode}.`,
-        });
-      } else {
-        setNotificationToast({
-          channel: 'email',
-          title: 'Email Verifikasi Terkirim',
-          body: `Kode verifikasi ${generatedCode} telah dikirim ke ${email}.`,
-        });
-      }
+      // Tampilkan toast notifikasi WhatsApp Bot
+      setNotificationToast({
+        channel: 'wa',
+        title: 'Kode OTP WhatsApp Terkirim',
+        body: `Halo ${name}! Kode OTP verifikasi pendaftaran akun NexaFinance Anda adalah: ${generatedCode}. Kode dikirim ke nomor ${whatsappNumber}.`,
+      });
 
       setTimeout(() => {
         setNotificationToast(null);
-      }, 8000);
+      }, 10000);
 
       setTimeout(() => {
         otpInputRefs.current[0]?.focus();
       }, 200);
-    } catch {
-      setError('Gagal mengirim kode verifikasi email. Coba lagi.');
+    } catch (err: any) {
+      setError(err?.message || 'Gagal memverifikasi pendaftaran. Silakan coba kembali.');
     } finally {
       setLoading(false);
     }
@@ -278,7 +293,7 @@ export const RegisterPage: React.FC = () => {
                 Daftar Akun NexaFinance
               </h1>
               <p className="font-body-sm text-body-sm text-on-surface-variant max-w-sm">
-                Isi email & kata sandi Anda. Kode verifikasi OTP akan dikirimkan ke email untuk aktivasi akun.
+                Isi data akun Anda. Kode verifikasi 6-digit OTP akan dikirimkan ke nomor WhatsApp Anda untuk aktivasi akun.
               </p>
             </div>
 
@@ -310,10 +325,36 @@ export const RegisterPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Nomor WhatsApp (Wajib untuk OTP) */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
+                    Nomor WhatsApp (Tujuan Pengiriman OTP) *
+                  </label>
+                  <span className="text-[11px] text-primary font-semibold">OTP Dikirim ke Sini</span>
+                </div>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
+                    chat
+                  </span>
+                  <input
+                    type="tel"
+                    required
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    placeholder="Contoh: 081234567890"
+                    className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
+                  />
+                </div>
+                <span className="text-[11.5px] text-on-surface-variant">
+                  Pastikan nomor aktif dan belum pernah didaftarkan pada akun lain.
+                </span>
+              </div>
+
               {/* Email Bisnis */}
               <div className="flex flex-col gap-1">
                 <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
-                  Alamat Email Bisnis (Untuk OTP)
+                  Alamat Email Bisnis (Login & Notifikasi) *
                 </label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
@@ -328,28 +369,9 @@ export const RegisterPage: React.FC = () => {
                     className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
                   />
                 </div>
-              </div>
-
-              {/* Nomor WhatsApp (Opsional) */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
-                    Nomor WhatsApp (Aktif)
-                  </label>
-                  <span className="text-[11px] text-on-surface-variant">Notifikasi OTP & Saldo</span>
-                </div>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">
-                    chat
-                  </span>
-                  <input
-                    type="tel"
-                    value={whatsappNumber}
-                    onChange={(e) => setWhatsappNumber(e.target.value)}
-                    placeholder="0812-3456-7890"
-                    className="w-full pl-10 pr-space-md py-space-sm bg-surface-container-low/70 border border-outline-variant rounded-xl font-body-md text-on-surface focus:outline-none focus:border-primary focus:bg-surface-container-lowest transition-all"
-                  />
-                </div>
+                <span className="text-[11.5px] text-on-surface-variant">
+                  Email harus unik dan belum pernah digunakan sebelumnya.
+                </span>
               </div>
 
               {/* Grid Password & Confirm Password */}
@@ -398,7 +420,7 @@ export const RegisterPage: React.FC = () => {
               <div className="p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/60 flex items-start gap-space-xs text-xs text-on-surface-variant">
                 <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">verified</span>
                 <span>
-                  Setelah menekan tombol di bawah, kode 6-digit OTP verifikasi akan dikirimkan ke <strong>{email || 'email Anda'}</strong> untuk memastikan kepemilikan akun.
+                  Sistem akan memvalidasi keunikan email & nomor WhatsApp Anda. Kode 6-digit OTP akan langsung dikirimkan ke nomor WhatsApp <strong>{whatsappNumber || 'yang didaftarkan'}</strong>.
                 </span>
               </div>
 
@@ -408,7 +430,7 @@ export const RegisterPage: React.FC = () => {
                 disabled={loading}
                 className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary font-body-md font-semibold flex items-center justify-center gap-space-xs shadow-sm transition-colors disabled:opacity-50 mt-1"
               >
-                <span>{loading ? 'Menyiapkan OTP...' : 'Daftar & Kirim Kode OTP ke Email'}</span>
+                <span>{loading ? 'Memeriksa Keunikan Data...' : 'Daftar & Kirim Kode OTP ke WhatsApp'}</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </form>
@@ -435,7 +457,7 @@ export const RegisterPage: React.FC = () => {
         )}
 
         {/* ======================================================== */}
-        {/* STEP 2: VERIFIKASI EMAIL DENGAN OTP                      */}
+        {/* STEP 2: VERIFIKASI NOMOR WHATSAPP DENGAN OTP            */}
         {/* ======================================================== */}
         {step === 'otp' && (
           <>
@@ -452,26 +474,24 @@ export const RegisterPage: React.FC = () => {
                 <span>Ubah</span>
               </button>
 
-              <div className="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm mb-1">
-                <span className="material-symbols-outlined text-[26px]">mark_email_read</span>
+              <div className="w-12 h-12 rounded-xl bg-[#25D366] text-white flex items-center justify-center shadow-sm mb-1">
+                <span className="material-symbols-outlined text-[26px]">chat</span>
               </div>
-              <span className="font-label-caps text-label-caps text-primary uppercase font-bold tracking-wider">
-                Verifikasi Email Akun
+              <span className="font-label-caps text-label-caps text-[#00873c] uppercase font-bold tracking-wider">
+                Verifikasi OTP WhatsApp
               </span>
               <h1 className="font-headline-md text-headline-md font-bold text-on-surface">
                 Masukkan Kode OTP
               </h1>
               <div className="font-body-sm text-body-sm text-on-surface-variant max-w-xs mt-0.5">
-                Kode verifikasi 6-digit telah dikirim ke: <br />
-                <strong className="text-on-surface font-semibold">{email}</strong>
+                Kode verifikasi 6-digit telah dikirim ke nomor WhatsApp: <br />
+                <strong className="text-on-surface font-semibold">{whatsappNumber}</strong>
               </div>
 
-              {whatsappNumber && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#25D366]/10 text-[#00873c] font-label-caps text-label-caps mt-1">
-                  <span className="material-symbols-outlined text-[14px]">chat</span>
-                  <span>Notifikasi WhatsApp Aktif ({whatsappNumber})</span>
-                </div>
-              )}
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-caps text-label-caps mt-1">
+                <span className="material-symbols-outlined text-[14px]">mail</span>
+                <span>Email Terdaftar: {email}</span>
+              </div>
             </div>
 
             {error && (
@@ -503,10 +523,10 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               {/* Demo Helper Banner with Instant 1-Click Fill */}
-              <div className="w-full p-space-sm rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between text-body-sm">
-                <div className="flex items-center gap-1.5 text-primary font-badge-label text-badge-label">
-                  <span className="material-symbols-outlined text-[16px]">verified</span>
-                  <span>Kode OTP Email: <strong>{activeOtpCode}</strong></span>
+              <div className="w-full p-space-sm rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 flex items-center justify-between text-body-sm">
+                <div className="flex items-center gap-1.5 text-[#00873c] font-badge-label text-badge-label">
+                  <span className="material-symbols-outlined text-[16px]">chat</span>
+                  <span>Kode OTP WhatsApp: <strong>{activeOtpCode}</strong></span>
                 </div>
                 <button
                   type="button"
@@ -524,7 +544,7 @@ export const RegisterPage: React.FC = () => {
                 disabled={loading || otp.join('').length < 6}
                 className="w-full py-space-sm px-space-md rounded-xl bg-primary hover:bg-primary-container text-on-primary font-body-md font-semibold flex items-center justify-center gap-space-xs shadow-sm transition-colors disabled:opacity-50"
               >
-                <span>{loading ? 'Membuat Akun...' : 'Verifikasi & Aktifkan Akun'}</span>
+                <span>{loading ? 'Membuat Akun...' : 'Verifikasi OTP & Aktifkan Akun'}</span>
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
               </button>
 
@@ -532,7 +552,7 @@ export const RegisterPage: React.FC = () => {
               <div className="text-center font-body-sm text-body-sm text-on-surface-variant">
                 {!canResend ? (
                   <span>
-                    Kirim ulang kode dalam <strong className="text-on-surface">{countdown} detik</strong>
+                    Kirim ulang kode OTP dalam <strong className="text-on-surface">{countdown} detik</strong>
                   </span>
                 ) : (
                   <button
@@ -541,7 +561,7 @@ export const RegisterPage: React.FC = () => {
                     className="text-primary font-bold hover:underline inline-flex items-center gap-1"
                   >
                     <span className="material-symbols-outlined text-[16px]">refresh</span>
-                    <span>Kirim Ulang Kode Sekarang</span>
+                    <span>Kirim Ulang Kode OTP ke WhatsApp</span>
                   </button>
                 )}
               </div>
