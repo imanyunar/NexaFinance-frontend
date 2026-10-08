@@ -2,7 +2,7 @@ import React from 'react';
 import { GoogleIcon } from './GoogleIcon';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'dark';
   size?: 'sm' | 'md' | 'lg';
   googleIcon?: string;
   iconPosition?: 'left' | 'right';
@@ -26,28 +26,34 @@ export const Button: React.FC<ButtonProps> = ({
       case 'secondary':
         return {
           backgroundColor: '#ffffff',
-          color: '#005caa',
-          border: '1px solid #005caa',
+          color: '#171b26',
+          border: '1px solid #cbd5e1',
         };
       case 'outline':
         return {
           backgroundColor: '#ffffff',
-          color: '#000000',
-          border: '1px solid #e5e5e5',
+          color: '#171b26',
+          border: '1px solid #e2e8f0',
         };
       case 'ghost':
         return {
           backgroundColor: 'transparent',
-          color: '#666666',
+          color: '#6d7a72',
           border: '1px solid transparent',
+        };
+      case 'dark':
+        return {
+          backgroundColor: '#0b0f19',
+          color: '#ffffff',
+          border: '1px solid #0b0f19',
         };
       case 'primary':
       default:
         return {
-          backgroundColor: '#005caa',
+          backgroundColor: '#006948',
           color: '#ffffff',
-          border: '1px solid #005caa',
-          boxShadow: '0 2px 8px rgba(0, 92, 170, 0.15)',
+          border: '1px solid #006948',
+          boxShadow: '0 1px 3px rgba(0, 105, 72, 0.2)',
         };
     }
   };
@@ -56,24 +62,24 @@ export const Button: React.FC<ButtonProps> = ({
     switch (size) {
       case 'sm':
         return {
-          padding: '6px 16px',
+          padding: '6px 14px',
           fontSize: '13px',
-          borderRadius: '48px',
+          borderRadius: '8px',
           gap: '6px',
         };
       case 'lg':
         return {
-          padding: '12px 32px',
+          padding: '12px 28px',
           fontSize: '15px',
-          borderRadius: '48px',
+          borderRadius: '8px',
           gap: '10px',
         };
       case 'md':
       default:
         return {
-          padding: '10px 24px',
+          padding: '9px 20px',
           fontSize: '14px',
-          borderRadius: '48px',
+          borderRadius: '8px',
           gap: '8px',
         };
     }
@@ -87,7 +93,7 @@ export const Button: React.FC<ButtonProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: "'Open Sans', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         fontWeight: 600,
         cursor: disabled || loading ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.6 : 1,

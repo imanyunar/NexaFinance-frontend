@@ -16,7 +16,7 @@ export const Card: React.FC<CardProps> = ({
   subtitle,
   googleIcon,
   action,
-  padding = '24px',
+  padding = '20px',
   elevation = 'normal',
   className = '',
   style,
@@ -24,8 +24,8 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const getShadow = () => {
     if (elevation === 'none') return 'none';
-    if (elevation === 'subtle') return 'rgba(112, 144, 176, 0.08) 0px 2px 12px 0px';
-    return 'rgba(112, 144, 176, 0.1) 0px 0px 40px 8px';
+    if (elevation === 'subtle') return '0 1px 2px 0 rgba(15, 23, 42, 0.04)';
+    return '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)';
   };
 
   return (
@@ -33,8 +33,8 @@ export const Card: React.FC<CardProps> = ({
       className={`card ${className}`}
       style={{
         background: '#ffffff',
-        borderRadius: '24px',
-        border: '1px solid #e5e5e5',
+        borderRadius: '12px',
+        border: '1px solid #e2e8f0',
         boxShadow: getShadow(),
         padding: padding,
         display: 'flex',
@@ -59,15 +59,15 @@ export const Card: React.FC<CardProps> = ({
                 style={{
                   width: '36px',
                   height: '36px',
-                  borderRadius: '12px',
-                  background: '#e8f2fa',
-                  color: '#005caa',
+                  borderRadius: '8px',
+                  background: '#f0fdf4',
+                  color: '#006948',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <GoogleIcon name={googleIcon} size={20} color="#005caa" />
+                <GoogleIcon name={googleIcon} size={20} color="#006948" />
               </div>
             )}
             <div>
@@ -77,8 +77,8 @@ export const Card: React.FC<CardProps> = ({
                     margin: 0,
                     fontSize: '16px',
                     fontWeight: 700,
-                    fontFamily: "'Open Sans', sans-serif",
-                    color: '#000000',
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    color: '#171b26',
                   }}
                 >
                   {title}
@@ -89,7 +89,7 @@ export const Card: React.FC<CardProps> = ({
                   style={{
                     margin: '2px 0 0',
                     fontSize: '12px',
-                    color: '#666666',
+                    color: '#6d7a72',
                   }}
                 >
                   {subtitle}

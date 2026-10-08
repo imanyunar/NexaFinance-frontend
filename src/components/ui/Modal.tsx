@@ -19,7 +19,7 @@ export const Modal: React.FC<ModalProps> = ({
   subtitle,
   googleIcon,
   children,
-  maxWidth = 560,
+  maxWidth = 540,
   footer,
 }) => {
   useEffect(() => {
@@ -47,13 +47,13 @@ export const Modal: React.FC<ModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.45)',
-        backdropFilter: 'blur(3px)',
+        backgroundColor: 'rgba(11, 15, 25, 0.45)',
+        backdropFilter: 'blur(4px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: '20px',
+        padding: '16px',
         animation: 'modalBackdropFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
         willChange: 'opacity',
       }}
@@ -63,16 +63,16 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          boxShadow: 'rgba(112, 144, 176, 0.2) 0px 12px 48px 0px',
-          border: '1px solid #e5e5e5',
+          borderRadius: '12px',
+          boxShadow: '0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06)',
+          border: '1px solid #e2e8f0',
           maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          animation: 'modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
           willChange: 'transform, opacity',
           backfaceVisibility: 'hidden',
           transform: 'translate3d(0, 0, 0)',
@@ -81,8 +81,8 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Header */}
         <div
           style={{
-            padding: '24px 28px 18px',
-            borderBottom: '1px solid #f0f0f0',
+            padding: '20px 24px 16px',
+            borderBottom: '1px solid #e5e7f6',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -92,33 +92,33 @@ export const Modal: React.FC<ModalProps> = ({
             {googleIcon && (
               <div
                 style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '12px',
-                  backgroundColor: '#e8f2fa',
-                  color: '#005caa',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  backgroundColor: '#f0fdf4',
+                  color: '#006948',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <GoogleIcon name={googleIcon} size={22} color="#005caa" />
+                <GoogleIcon name={googleIcon} size={20} color="#006948" />
               </div>
             )}
             <div>
               <h2
                 style={{
                   margin: 0,
-                  fontSize: '18px',
+                  fontSize: '17px',
                   fontWeight: 700,
-                  fontFamily: "'Open Sans', sans-serif",
-                  color: '#000000',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  color: '#171b26',
                 }}
               >
                 {title}
               </h2>
               {subtitle && (
-                <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#666666' }}>
+                <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: '#6d7a72' }}>
                   {subtitle}
                 </p>
               )}
@@ -130,24 +130,24 @@ export const Modal: React.FC<ModalProps> = ({
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: '#666666',
+              color: '#6d7a72',
               padding: '6px',
-              borderRadius: '50%',
+              borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'background-color 0.15s ease',
             }}
-            aria-label="Close"
+            aria-label="Tutup Dialog"
           >
-            <GoogleIcon name="close" size={20} color="#666666" />
+            <GoogleIcon name="close" size={20} color="#6d7a72" />
           </button>
         </div>
 
         {/* Body */}
         <div
           style={{
-            padding: '24px 28px',
+            padding: '20px 24px',
             overflowY: 'auto',
             flex: 1,
           }}
@@ -159,13 +159,13 @@ export const Modal: React.FC<ModalProps> = ({
         {footer && (
           <div
             style={{
-              padding: '16px 28px 24px',
-              borderTop: '1px solid #f0f0f0',
-              backgroundColor: '#fafbfc',
+              padding: '14px 24px 18px',
+              borderTop: '1px solid #e5e7f6',
+              backgroundColor: '#faf8ff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              gap: '12px',
+              gap: '10px',
             }}
           >
             {footer}

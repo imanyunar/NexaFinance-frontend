@@ -34,10 +34,10 @@ export const Input: React.FC<InputProps> = ({
         <label
           htmlFor={inputId}
           style={{
-            fontSize: '13px',
+            fontSize: '12.5px',
             fontWeight: 600,
-            fontFamily: "'Open Sans', sans-serif",
-            color: '#000000',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            color: '#171b26',
           }}
         >
           {label}
@@ -48,16 +48,16 @@ export const Input: React.FC<InputProps> = ({
           <div
             style={{
               position: 'absolute',
-              left: '14px',
+              left: '12px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#666666',
+              color: '#6d7a72',
               display: 'flex',
               alignItems: 'center',
               pointerEvents: 'none',
             }}
           >
-            <GoogleIcon name={googleIcon} size={18} color="#666666" />
+            <GoogleIcon name={googleIcon} size={18} color="#6d7a72" />
           </div>
         )}
         <input
@@ -65,14 +65,14 @@ export const Input: React.FC<InputProps> = ({
           className={`form-input ${className}`}
           style={{
             width: '100%',
-            padding: googleIcon ? '11px 16px 11px 40px' : '11px 16px',
+            padding: googleIcon ? '9px 14px 9px 38px' : '9px 14px',
             fontSize: '14px',
-            borderRadius: '16px',
-            border: error ? '1px solid #c5221f' : '1px solid #e5e5e5',
+            borderRadius: '8px',
+            border: error ? '1px solid #ba1a1a' : '1px solid #cbd5e1',
             backgroundColor: '#ffffff',
-            color: '#000000',
+            color: '#171b26',
             outline: 'none',
-            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
             boxSizing: 'border-box',
             transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
             ...style,
@@ -81,7 +81,7 @@ export const Input: React.FC<InputProps> = ({
         />
       </div>
       {error && (
-        <span style={{ fontSize: '12px', color: '#c5221f', marginTop: '2px' }}>
+        <span style={{ fontSize: '12px', color: '#ba1a1a', marginTop: '2px' }}>
           {error}
         </span>
       )}

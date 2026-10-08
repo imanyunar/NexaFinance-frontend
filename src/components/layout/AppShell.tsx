@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileModal } from '../profile/ProfileModal';
@@ -8,6 +8,9 @@ import { GoogleIcon, Button, Modal, Input } from '../ui';
 export const AppShell: React.FC = () => {
   const { activeWorkspace, refreshData, createTransaction, accounts, categories, loading } = useWorkspace();
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -33,6 +36,11 @@ export const AppShell: React.FC = () => {
       setSourceAccountId(accounts[0].id);
     }
   }, [accounts, sourceAccountId]);
+
+  // Close mobile drawer on route change
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,349 +75,343 @@ export const AppShell: React.FC = () => {
     }
   };
 
-  const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase()
-    : 'IA';
+  const getPageTitle = () => {
+    switch (location.pathname) {
+      case '/':
+        return 'Dashboard';
+      case '/transactions':
+        return 'Buku Transaksi';
+      case '/budgets':
+        return 'Pagu Anggaran';
+      case '/accounts':
+        return 'Kas & Dompet Bisnis';
+      case '/ai':
+      case '/agent':
+        return 'AI & Struk OCR';
+      default:
+        return 'Treasury';
+    }
+  };
 
   const navItems = [
-    { to: '/', label: 'Ringkasan Treasury', icon: 'dashboard' },
+    { to: '/', label: 'Dashboard', icon: 'dashboard' },
     { to: '/transactions', label: 'Buku Transaksi', icon: 'receipt_long' },
-    { to: '/budgets', label: 'Batas Anggaran', icon: 'savings' },
-    { to: '/accounts', label: 'Rekening & Kas', icon: 'account_balance_wallet' },
-    { to: '/ai', label: 'Nexa AI Agent', icon: 'smart_toy', badge: 'Active' },
+    { to: '/budgets', label: 'Pagu Anggaran', icon: 'shield' },
+    { to: '/accounts', label: 'Kas & Dompet Bisnis', icon: 'account_balance_wallet' },
+    { to: '/ai', label: 'AI & Struk OCR', icon: 'auto_awesome', badge: 'PRO' },
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
-      {/* Top Navbar (Light/White Canvas Inspired by BCA) */}
-      <header
-        style={{
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #e5e5e5',
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          boxShadow: 'rgba(112, 144, 176, 0.08) 0px 2px 12px 0px',
-        }}
+    <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex flex-col">
+      {/* -------------------------------------------------------------
+          LEFT SIDEBAR (Fixed 288px on Desktop, Drawer on Mobile)
+      -------------------------------------------------------------- */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 w-72 bg-surface-container-low border-r border-surface-container-high flex flex-col justify-between z-50 transition-transform duration-250 ease-out lg:translate-x-0 ${
+          mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        }`}
       >
-        <div
-          style={{
-            maxWidth: '1360px',
-            margin: '0 auto',
-            padding: '14px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '16px',
-          }}
-        >
-          {/* Logo & Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <NavLink to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  backgroundColor: '#005caa',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '20px',
-                  color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(0, 92, 170, 0.25)',
-                }}
-              >
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Logo Brand Header */}
+          <div className="h-16 px-space-lg flex items-center justify-between border-b border-surface-container-high/60">
+            <NavLink to="/" className="flex items-center gap-space-sm text-decoration-none">
+              <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold text-lg shadow-sm">
                 N
               </div>
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.3px', lineHeight: 1.1, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
-                  Nexa<span style={{ color: '#005caa' }}>Finance</span>
-                </div>
-                <div style={{ fontSize: '11px', color: '#666666', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600 }}>
-                  Corporate Treasury
-                </div>
-              </div>
+              <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
+                NexaFinance
+              </span>
             </NavLink>
-
-            {/* Workspace Selector Badge */}
-            {activeWorkspace && (
-              <div
-                className="hide-on-mobile"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#f8fafc',
-                  padding: '6px 14px',
-                  borderRadius: '48px',
-                  border: '1px solid #e5e5e5',
-                  fontSize: '13px',
-                  color: '#000000',
-                }}
-              >
-                <GoogleIcon name="apartment" size={16} color="#005caa" />
-                <span style={{ fontWeight: 600 }}>{activeWorkspace.name}</span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: '#005caa',
-                    backgroundColor: '#e8f2fa',
-                    padding: '2px 8px',
-                    borderRadius: '48px',
-                    fontWeight: 600,
-                  }}
-                >
-                  {activeWorkspace.role}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Right Header Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* WhatsApp Integration Status */}
-            <div
-              className="hide-on-mobile"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: '#e6f4ea',
-                border: '1px solid #ceead6',
-                color: '#137333',
-                padding: '6px 14px',
-                borderRadius: '48px',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
-              title="WhatsApp Bot Assistant Aktif (Private Channel)"
-            >
-              <GoogleIcon name="smartphone" size={15} color="#137333" />
-              <span>WA Bot Aktif</span>
-            </div>
-
-            {/* Refresh Sync Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refreshData()}
-              disabled={loading}
-              googleIcon="sync"
-              title="Muat ulang data dari production"
-            >
-              Sync
-            </Button>
-
-            {/* Quick Add Button */}
-            <Button
-              variant="primary"
-              size="sm"
-              googleIcon="add"
-              onClick={() => {
-                if (accounts.length > 0) {
-                  setSourceAccountId(accounts[0].id);
-                  if (accounts.length > 1) setDestinationAccountId(accounts[1].id);
-                }
-                const expenseCats = categories.filter((c) => c.type === 'EXPENSE');
-                if (expenseCats.length > 0) {
-                  setCategoryId(expenseCats[0].id);
-                }
-                setShowAddModal(true);
-              }}
-            >
-              Catat Transaksi
-            </Button>
-
-            {/* User Profile Pill & Dropdown */}
-            <div style={{ position: 'relative' }}>
+            <div className="flex items-center gap-1">
+              <span className="font-label-caps text-label-caps uppercase bg-surface-container-high px-space-xs py-space-2xs rounded text-on-surface-variant font-semibold">
+                IDN
+              </span>
               <button
                 type="button"
-                onClick={() => setShowDropdown(!showDropdown)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  padding: '5px 12px 5px 6px',
-                  borderRadius: '48px',
-                  cursor: 'pointer',
-                  color: '#000000',
-                  boxShadow: 'rgba(112, 144, 176, 0.08) 0px 2px 8px 0px',
-                  transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
-                  willChange: 'transform',
-                }}
+                className="lg:hidden p-1 rounded-md text-on-surface-variant hover:bg-surface-container-high"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Tutup Menu"
               >
-                <div
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%',
-                    backgroundColor: '#005caa',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: '#ffffff',
-                  }}
-                >
-                  {initials}
-                </div>
-                <span className="hide-on-mobile" style={{ fontSize: '13px', fontWeight: 600 }}>{user?.name || 'Iman Azizi'}</span>
-                <GoogleIcon name="expand_more" size={16} color="#666666" />
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
-
-              {/* Dropdown Menu */}
-              {showDropdown && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '120%',
-                    right: 0,
-                    width: '210px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '20px',
-                    boxShadow: 'rgba(112, 144, 176, 0.2) 0px 8px 30px 0px',
-                    border: '1px solid #e5e5e5',
-                    padding: '8px',
-                    zIndex: 50,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    animation: 'modalSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                    willChange: 'transform, opacity',
-                    backfaceVisibility: 'hidden',
-                    transform: 'translate3d(0, 0, 0)',
-                  }}
-                  onClick={() => setShowDropdown(false)}
-                >
-                  <button
-                    onClick={() => setShowProfileModal(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '10px 14px',
-                      background: 'transparent',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      color: '#000000',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      width: '100%',
-                      transition: 'background 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f6fa')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <GoogleIcon name="person" size={18} color="#005caa" />
-                    <span>Profil Pengguna</span>
-                  </button>
-
-                  <div style={{ height: '1px', backgroundColor: '#f0f0f0', margin: '4px 0' }} />
-
-                  <button
-                    onClick={logout}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '10px 14px',
-                      background: 'transparent',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      color: '#c5221f',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      width: '100%',
-                      transition: 'background 0.15s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fce8e6')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <GoogleIcon name="logout" size={18} color="#c5221f" />
-                    <span>Keluar / Logout</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
-        </div>
 
-        {/* Secondary Navigation Bar (Clean Pills with 48px border-radius) */}
-        <div style={{ backgroundColor: '#ffffff', borderTop: '1px solid #f0f0f0' }}>
-          <div
-            className="nav-scroll-container"
-            style={{
-              maxWidth: '1360px',
-              margin: '0 auto',
-              padding: '6px 24px',
-              display: 'flex',
-              gap: '12px',
-              overflowX: 'auto',
-            }}
-          >
+          {/* Workspace Switcher Card */}
+          <div className="px-space-md py-space-sm">
+            <button
+              type="button"
+              className="w-full flex items-center justify-between p-space-sm rounded-xl bg-surface-container-lowest border border-outline-variant/60 shadow-sm hover:bg-surface-container transition-colors text-left"
+            >
+              <div className="flex items-center gap-space-sm min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm shrink-0">
+                  N
+                </div>
+                <div className="min-w-0">
+                  <p className="font-body-md text-body-md text-on-surface truncate font-semibold leading-tight">
+                    {activeWorkspace?.name || 'Nexa Digital Agency'}
+                  </p>
+                  <p className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-space-xs mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+                    <span>{activeWorkspace?.role || 'Business Owner'}</span>
+                  </p>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-on-surface-variant text-[18px] shrink-0">
+                unfold_more
+              </span>
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 px-space-md py-space-xs space-y-space-2xs overflow-y-auto">
+            <div className="px-space-sm pb-1">
+              <span className="font-label-caps text-label-caps uppercase text-outline font-semibold tracking-wider">
+                Menu Utama
+              </span>
+            </div>
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === '/'}
-                style={({ isActive }) => ({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  borderRadius: '48px',
-                  fontSize: '13.5px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#005caa' : '#666666',
-                  backgroundColor: isActive ? '#e8f2fa' : 'transparent',
-                  border: isActive ? '1px solid #c3ddf2' : '1px solid transparent',
-                  transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
-                  willChange: 'background-color, color',
-                  whiteSpace: 'nowrap',
-                  textDecoration: 'none',
-                  fontFamily: "'Open Sans', sans-serif",
-                })}
+                className={({ isActive }) =>
+                  `flex items-center gap-space-md px-space-md py-space-sm rounded-xl transition-all group ${
+                    isActive
+                      ? 'bg-primary text-on-primary font-semibold shadow-sm'
+                      : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+                  }`
+                }
               >
-                <GoogleIcon name={item.icon} size={18} color="inherit" />
-                <span>{item.label}</span>
-                {item.badge && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      backgroundColor: '#005caa',
-                      color: '#ffffff',
-                      padding: '2px 8px',
-                      borderRadius: '48px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.badge}
-                  </span>
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={`material-symbols-outlined text-[20px] transition-colors ${
+                        isActive ? 'text-on-primary' : 'text-on-surface-variant group-hover:text-on-surface'
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="font-body-md text-body-md flex-1">{item.label}</span>
+                    {item.badge && (
+                      <span
+                        className={`font-badge-label text-badge-label px-space-xs py-space-2xs rounded-full font-bold ${
+                          isActive
+                            ? 'bg-on-primary/20 text-on-primary'
+                            : 'bg-secondary-fixed text-on-secondary-fixed'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
                 )}
               </NavLink>
             ))}
+          </nav>
+        </div>
+
+        {/* Sidebar Footer Cards */}
+        <div className="p-space-md space-y-space-sm shrink-0 border-t border-surface-container-high/60">
+          {/* Webhook Sync Pill */}
+          <div className="bg-surface-container-lowest p-space-sm rounded-xl border border-outline-variant/50 shadow-sm">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-tertiary live-dot"></span>
+                <span className="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider font-semibold">
+                  Webhook Sync
+                </span>
+              </div>
+              <span className="font-badge-label text-badge-label text-tertiary font-bold bg-tertiary-fixed/30 px-1.5 py-0.5 rounded">
+                2-Arah
+              </span>
+            </div>
+            <p className="font-numeric-table text-numeric-table font-semibold text-on-surface truncate">
+              +62 812-9981-XXXX
+            </p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant truncate text-[11px] mt-0.5">
+              Sinkronisasi WhatsApp Aktif
+            </p>
+          </div>
+
+          {/* Database Sync Status */}
+          <div className="flex items-center justify-between px-space-sm py-1 text-[11.5px] text-on-surface-variant">
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span>Neon PG Cloud</span>
+            </span>
+            <span className="font-mono text-[10px] text-outline">ap-southeast-1</span>
+          </div>
+
+          {/* User Account Tile */}
+          <div
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="flex items-center justify-between p-space-sm rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-space-sm min-w-0">
+              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold text-xs flex items-center justify-center shrink-0">
+                {user?.name?.slice(0, 2).toUpperCase() || 'IA'}
+              </div>
+              <div className="min-w-0">
+                <p className="font-body-md text-body-md text-on-surface truncate font-semibold leading-tight">
+                  {user?.name || 'Iman Azizi'}
+                </p>
+                <p className="font-label-caps text-label-caps text-on-surface-variant truncate text-[11px]">
+                  Business Owner · #WS-8821
+                </p>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant text-[18px] shrink-0">
+              more_vert
+            </span>
+          </div>
+
+          {/* Developer Attribution */}
+          <div className="pt-0.5 text-center">
+            <p className="font-label-caps text-label-caps text-outline text-[11px] flex items-center justify-center gap-1">
+              <span className="material-symbols-outlined text-[13px] text-primary">code</span>
+              <span>Developed by</span>
+              <span className="font-semibold text-on-surface">Nexa Digital Agency</span>
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Backdrop for Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* -------------------------------------------------------------
+          TOPBAR HEADER (Sticky, Aligned to Desktop Layout)
+      -------------------------------------------------------------- */}
+      <header className="fixed top-0 left-0 lg:left-72 right-0 h-16 bg-surface/90 backdrop-blur-md border-b border-surface-container-high z-30 flex items-center justify-between px-margin-md lg:px-gutter-lg">
+        {/* Left: Mobile Toggle & Breadcrumb */}
+        <div className="flex items-center gap-space-md min-w-0">
+          <button
+            type="button"
+            className="lg:hidden p-space-xs rounded-lg hover:bg-surface-container-high text-on-surface-variant"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Buka Menu Navigasi"
+          >
+            <span className="material-symbols-outlined text-[24px]">menu</span>
+          </button>
+
+          <div className="flex items-center gap-space-xs text-body-sm font-body-sm truncate">
+            <span className="text-on-surface-variant font-medium">Treasury</span>
+            <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+            <span className="text-on-surface font-semibold truncate">{getPageTitle()}</span>
+          </div>
+        </div>
+
+        {/* Right: Quick Actions & Profile */}
+        <div className="flex items-center gap-space-sm">
+          {/* WhatsApp Sync Badge Pill */}
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-space-md py-1 bg-surface-container-lowest border border-tertiary-fixed rounded-full text-tertiary font-badge-label text-badge-label shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-tertiary live-dot"></span>
+            <span className="font-semibold">WhatsApp Sync: Active (2-way)</span>
+          </div>
+
+          {/* Transfer Shortcut */}
+          <button
+            type="button"
+            onClick={() => {
+              setTxType('TRANSFER');
+              if (accounts.length > 0) setSourceAccountId(accounts[0].id);
+              if (accounts.length > 1) setDestinationAccountId(accounts[1].id);
+              setShowAddModal(true);
+            }}
+            className="hidden md:inline-flex items-center gap-space-xs px-space-md py-space-xs bg-surface-container-lowest hover:bg-surface-container text-on-surface text-body-sm font-body-sm font-medium rounded-lg border border-outline-variant shadow-xs transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">sync_alt</span>
+            <span>Transfer Antar Kas</span>
+          </button>
+
+          {/* Sync DB Refresh */}
+          <button
+            type="button"
+            onClick={() => refreshData()}
+            disabled={loading}
+            title="Muat ulang data live"
+            className="p-space-xs rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
+          >
+            <span className={`material-symbols-outlined text-[18px] ${loading ? 'animate-spin' : ''}`}>
+              refresh
+            </span>
+          </button>
+
+          {/* Primary Action Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setTxType('EXPENSE');
+              if (accounts.length > 0) setSourceAccountId(accounts[0].id);
+              const exp = categories.filter((c) => c.type === 'EXPENSE');
+              if (exp.length > 0) setCategoryId(exp[0].id);
+              setShowAddModal(true);
+            }}
+            className="inline-flex items-center gap-space-xs px-space-md py-space-xs bg-primary hover:bg-primary-container text-on-primary text-body-sm font-body-sm font-semibold rounded-lg shadow-sm transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            <span>+ Catat Transaksi</span>
+          </button>
+
+          {/* User Profile Pill */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-space-xs p-1 sm:px-space-sm sm:py-1 rounded-full border border-outline-variant hover:bg-surface-container-high transition-colors text-left"
+            >
+              <div className="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0">
+                {user?.name?.slice(0, 2).toUpperCase() || 'IA'}
+              </div>
+              <span className="hidden md:inline font-body-sm text-body-sm font-semibold text-on-surface max-w-[100px] truncate">
+                {user?.name || 'Iman Azizi'}
+              </span>
+              <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div
+                className="absolute right-0 top-11 w-52 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant p-space-2xs z-50 animate-fadeIn"
+                onClick={() => setShowDropdown(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(true)}
+                  className="w-full flex items-center gap-space-sm px-space-md py-space-xs rounded-lg hover:bg-surface-container text-on-surface text-body-sm font-medium text-left"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-primary">person</span>
+                  <span>Profil Pengguna</span>
+                </button>
+                <div className="my-1 border-t border-surface-container-high"></div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="w-full flex items-center gap-space-sm px-space-md py-space-xs rounded-lg hover:bg-error-container/40 text-error text-body-sm font-semibold text-left"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-error">logout</span>
+                  <span>Keluar / Logout</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, maxWidth: '1360px', width: '100%', margin: '0 auto', padding: '28px 24px' }}>
-        <Outlet />
-      </main>
+      {/* -------------------------------------------------------------
+          MAIN APPLICATION VIEW
+      -------------------------------------------------------------- */}
+      <div className="lg:pl-72 flex-1 flex flex-col pt-16">
+        <main className="flex-1 w-full max-w-[1440px] mx-auto p-margin-md lg:p-gutter-lg pb-space-3xl">
+          <Outlet />
+        </main>
+      </div>
 
       {/* Profile Modal */}
       <ProfileModal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} />
@@ -418,153 +420,137 @@ export const AppShell: React.FC = () => {
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        title="Catat Transaksi Baru"
-        subtitle="Masukkan pengeluaran, pemasukan, atau transfer antar rekening"
-        googleIcon="add_card"
-        maxWidth={480}
+        title="Catat Transaksi Instan"
+        subtitle="Otomatis memperbarui saldo rekening dengan pencatatan ganda presisi"
+        googleIcon="add_circle"
+        maxWidth={500}
       >
-        <form onSubmit={handleCreateTransaction}>
-          {/* Type Selector (Pills) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '20px' }}>
+        <form onSubmit={handleCreateTransaction} className="flex flex-col gap-space-md">
+          {/* Segmented Type Toggle */}
+          <div className="grid grid-cols-3 gap-space-xs p-1 bg-surface-container-low rounded-xl">
             <button
               type="button"
               onClick={() => setTxType('EXPENSE')}
-              style={{
-                padding: '10px 8px',
-                borderRadius: '48px',
-                border: '1px solid',
-                borderColor: txType === 'EXPENSE' ? '#c5221f' : '#e5e5e5',
-                backgroundColor: txType === 'EXPENSE' ? '#fce8e6' : '#ffffff',
-                color: txType === 'EXPENSE' ? '#c5221f' : '#666666',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
-              }}
+              className={`flex items-center justify-center gap-1.5 py-space-xs rounded-lg text-body-sm font-semibold transition-all ${
+                txType === 'EXPENSE'
+                  ? 'bg-surface-container-lowest text-error shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
             >
-              <GoogleIcon name="arrow_outward" size={16} color={txType === 'EXPENSE' ? '#c5221f' : '#666666'} />
+              <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
               <span>Pengeluaran</span>
             </button>
             <button
               type="button"
               onClick={() => setTxType('INCOME')}
-              style={{
-                padding: '10px 8px',
-                borderRadius: '48px',
-                border: '1px solid',
-                borderColor: txType === 'INCOME' ? '#137333' : '#e5e5e5',
-                backgroundColor: txType === 'INCOME' ? '#e6f4ea' : '#ffffff',
-                color: txType === 'INCOME' ? '#137333' : '#666666',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
-              }}
+              className={`flex items-center justify-center gap-1.5 py-space-xs rounded-lg text-body-sm font-semibold transition-all ${
+                txType === 'INCOME'
+                  ? 'bg-surface-container-lowest text-tertiary shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
             >
-              <GoogleIcon name="south_west" size={16} color={txType === 'INCOME' ? '#137333' : '#666666'} />
+              <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
               <span>Pemasukan</span>
             </button>
             <button
               type="button"
               onClick={() => setTxType('TRANSFER')}
-              style={{
-                padding: '10px 8px',
-                borderRadius: '48px',
-                border: '1px solid',
-                borderColor: txType === 'TRANSFER' ? '#005caa' : '#e5e5e5',
-                backgroundColor: txType === 'TRANSFER' ? '#e8f2fa' : '#ffffff',
-                color: txType === 'TRANSFER' ? '#005caa' : '#666666',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
-              }}
+              className={`flex items-center justify-center gap-1.5 py-space-xs rounded-lg text-body-sm font-semibold transition-all ${
+                txType === 'TRANSFER'
+                  ? 'bg-surface-container-lowest text-secondary shadow-xs'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
             >
-              <GoogleIcon name="swap_horiz" size={16} color={txType === 'TRANSFER' ? '#005caa' : '#666666'} />
+              <span className="material-symbols-outlined text-[16px]">sync_alt</span>
               <span>Transfer</span>
             </button>
           </div>
 
-          {/* Amount */}
-          <Input
-            label="Nominal (IDR)"
-            type="number"
-            placeholder="Contoh: 50000"
-            required
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            googleIcon="payments"
-            style={{ fontSize: '18px', fontWeight: 700 }}
-          />
+          {/* Nominal Input */}
+          <div className="flex flex-col gap-1">
+            <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
+              Nominal (IDR)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-on-surface-variant">
+                Rp
+              </span>
+              <input
+                type="number"
+                placeholder="0"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full pl-11 pr-space-md py-space-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-title-balance text-title-balance font-bold text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 tabular-nums transition-all"
+              />
+            </div>
+          </div>
 
-          {/* Description */}
-          <Input
-            label="Deskripsi / Keperluan"
-            type="text"
-            placeholder="Contoh: Makan siang nasi kapau"
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            googleIcon="description"
-          />
+          {/* Deskripsi */}
+          <div className="flex flex-col gap-1">
+            <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
+              Deskripsi Transaksi
+            </label>
+            <input
+              type="text"
+              placeholder="Contoh: Langganan bulanan software / Restock kasir"
+              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-space-md py-space-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+          </div>
 
-          {/* Source Account */}
-          <div className="form-group" style={{ marginBottom: '16px' }}>
-            <label className="form-label" style={{ fontSize: '13px', fontWeight: 600, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
-              {txType === 'TRANSFER' ? 'Dari Rekening Asal' : 'Rekening / Sumber Dana'}
+          {/* Rekening Asal */}
+          <div className="flex flex-col gap-1">
+            <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
+              {txType === 'TRANSFER' ? 'Dari Rekening Asal' : 'Rekening / Pos Kas'}
             </label>
             <select
-              className="form-select"
               value={sourceAccountId}
               onChange={(e) => setSourceAccountId(e.target.value)}
               required
-              style={{
-                width: '100%',
-                padding: '11px 16px',
-                borderRadius: '16px',
-                border: '1px solid #e5e5e5',
-                fontSize: '14px',
-                backgroundColor: '#ffffff',
-              }}
+              className="w-full px-space-md py-space-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             >
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>
-                  {acc.name} — {formatRupiah(acc.balance)}
+                  {acc.name} ({formatRupiah(acc.balance)})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Category Selector */}
+          {/* Rekening Tujuan (Khusus Transfer) */}
+          {txType === 'TRANSFER' && (
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
+                Ke Rekening Tujuan
+              </label>
+              <select
+                value={destinationAccountId}
+                onChange={(e) => setDestinationAccountId(e.target.value)}
+                required
+                className="w-full px-space-md py-space-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({formatRupiah(acc.balance)})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Kategori (Jika Bukan Transfer) */}
           {txType !== 'TRANSFER' && (
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="form-label" style={{ fontSize: '13px', fontWeight: 600, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps uppercase text-outline font-semibold">
                 Kategori {txType === 'EXPENSE' ? 'Pengeluaran' : 'Pemasukan'}
               </label>
               <select
-                className="form-select"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '11px 16px',
-                  borderRadius: '16px',
-                  border: '1px solid #e5e5e5',
-                  fontSize: '14px',
-                  backgroundColor: '#ffffff',
-                }}
+                className="w-full px-space-md py-space-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 <option value="">-- Tanpa Kategori Khusus --</option>
                 {categories
@@ -578,81 +564,26 @@ export const AppShell: React.FC = () => {
             </div>
           )}
 
-          {/* Destination Account for Transfer */}
-          {txType === 'TRANSFER' && (
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label className="form-label" style={{ fontSize: '13px', fontWeight: 600, color: '#000000', fontFamily: "'Open Sans', sans-serif" }}>
-                Ke Rekening Tujuan
-              </label>
-              <select
-                className="form-select"
-                value={destinationAccountId}
-                onChange={(e) => setDestinationAccountId(e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '11px 16px',
-                  borderRadius: '16px',
-                  border: '1px solid #e5e5e5',
-                  fontSize: '14px',
-                  backgroundColor: '#ffffff',
-                }}
-              >
-                {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} — {formatRupiah(acc.balance)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-            <Button
+          {/* Modal Actions */}
+          <div className="flex items-center justify-end gap-space-sm pt-space-xs border-t border-surface-container-high">
+            <button
               type="button"
-              variant="outline"
-              size="md"
               onClick={() => setShowAddModal(false)}
+              className="px-space-md py-space-xs bg-surface-container-lowest border border-outline-variant hover:bg-surface-container rounded-lg font-body-md font-medium text-on-surface-variant transition-colors"
             >
               Batal
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
-              variant="primary"
-              size="md"
-              loading={submitting}
-              googleIcon="check"
+              disabled={submitting}
+              className="inline-flex items-center gap-space-xs px-space-lg py-space-xs bg-primary hover:bg-primary-container text-on-primary font-body-md font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
             >
-              {submitting ? 'Menyimpan...' : 'Simpan Transaksi'}
-            </Button>
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              <span>{submitting ? 'Menyimpan...' : 'Simpan Transaksi'}</span>
+            </button>
           </div>
         </form>
       </Modal>
-
-      {/* Friendly Light Footer */}
-      <footer
-        style={{
-          borderTop: '1px solid #e5e5e5',
-          padding: '18px 24px',
-          backgroundColor: '#ffffff',
-          color: '#666666',
-          fontSize: '13px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <GoogleIcon name="verified_user" size={16} color="#005caa" />
-          <span><strong>NexaFinance</strong> &copy; 2026. Terhubung ke Neon Cloud Serverless PostgreSQL.</span>
-        </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <span>API: <code>nexafinance-alpha.vercel.app</code></span>
-          <span>Channel: <code style={{ color: '#137333' }}>Private Encrypted</code></span>
-        </div>
-      </footer>
     </div>
   );
 };
