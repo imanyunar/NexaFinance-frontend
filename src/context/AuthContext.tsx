@@ -39,9 +39,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = useCallback(async (reason?: string | React.MouseEvent) => {
     try {
-      sessionStorage.removeItem('nexa_session_active');
-      sessionStorage.removeItem('nexa_last_activity');
-      await apiFetch('/auth/sign-out', { method: 'POST' });
+      // 1. Mark explicit logout flag so subsequent link clicks or tabs NEVER auto-login
+      try {
+        localStorage.setItem('nexa_explicit_logged_out', 'true');
+      } catch {}
+      try {
+        sessionStorage.clear();
+      } catch {}
+
+      // 2. Clear client-accessible cookies
+      try {
+        const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+        ['better-auth.session_token', '__Secure-better-auth.session_token', 'better-auth.session_data', '__Secure-better-auth.session_data'].forEach((c) => {
+          document.cookie = `${c}=; expires=${past}; path=/; SameSite=None; Secure`;
+          document.cookie = `${c}=; expires=${past}; path=/;`;
+        });
+      } catch {}
+
+      // 3. Destroy session on server
+      await apiFetch('/auth/sign-out', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
     } catch {
       // ignore
     } finally {
@@ -57,20 +76,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
 
-      // Bank-Grade Check 1: Cek apakah ini sesi browser baru (misal laptop baru dinyalakan / browser baru dibuka)
-      const isSessionActive = sessionStorage.getItem('nexa_session_active');
-      const lastActivity = Number(sessionStorage.getItem('nexa_last_activity') || '0');
+      // Bank-Grade Check 1: User explicitly logged out (either previously clicked logout or idle expired)
+      const isExplicitlyLoggedOut = typeof localStorage !== 'undefined' && localStorage.getItem('nexa_explicit_logged_out') === 'true';
+      if (isExplicitlyLoggedOut) {
+        setUser(null);
+        return;
+      }
+
+      // Bank-Grade Check 2: Cek apakah ini sesi browser baru (misal laptop baru dinyalakan / browser baru dibuka)
+      const isSessionActive = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nexa_session_active');
+      const lastActivity = Number((typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nexa_last_activity')) || '0');
 
       if (!isSessionActive) {
         // Laptop baru menyala atau browser baru dibuka -> Otomatis logout demi keamanan bank
         try {
-          await apiFetch('/auth/sign-out', { method: 'POST' });
+          await apiFetch('/auth/sign-out', {
+            method: 'POST',
+            body: JSON.stringify({}),
+          });
         } catch {}
         setUser(null);
         return;
       }
 
-      // Bank-Grade Check 2: Cek apakah melebihi idle timeout 15 menit
+      // Bank-Grade Check 3: Cek apakah melebihi idle timeout 15 menit
       if (lastActivity && Date.now() - lastActivity > IDLE_TIMEOUT_MS) {
         await logout('Sesi Anda telah kedaluwarsa demi keamanan perbankan (tidak ada aktivitas selama 15 menit). Silakan login kembali.');
         return;
@@ -107,13 +136,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ email, password }),
       });
 
-      if (data?.user) {
+      // Clear explicit logout flag upon genuine user authentication
+      try {
+        localStorage.removeItem('nexa_explicit_logged_out');
         sessionStorage.setItem('nexa_session_active', 'true');
         sessionStorage.setItem('nexa_last_activity', String(Date.now()));
+      } catch {}
+
+      if (data?.user) {
         setUser(data.user);
       } else {
-        sessionStorage.setItem('nexa_session_active', 'true');
-        sessionStorage.setItem('nexa_last_activity', String(Date.now()));
         await refreshSession();
       }
     } finally {

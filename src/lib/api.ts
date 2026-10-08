@@ -15,15 +15,24 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_BASE}${cleanEndpoint}`;
 
-  const defaultHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  const method = (options.method || 'GET').toUpperCase();
+  const headers: Record<string, string> = {};
+
+  // For POST, PUT, PATCH: ensure body is at least an empty JSON object if Content-Type is application/json
+  let body = options.body;
+  if (['POST', 'PUT', 'PATCH'].includes(method)) {
+    headers['Content-Type'] = 'application/json';
+    if (body === undefined) {
+      body = JSON.stringify({});
+    }
+  }
 
   const response = await fetch(url, {
     ...options,
+    body,
     credentials: 'include', // Automatically passes HttpOnly Secure cookie
     headers: {
-      ...defaultHeaders,
+      ...headers,
       ...(options.headers as Record<string, string> || {}),
     },
   });
@@ -39,5 +48,19 @@ export async function apiFetch<T = any>(endpoint: string, options: RequestInit =
     throw new Error(errorMsg);
   }
 
-  return response.json();
+  // Handle 204 No Content or empty responses cleanly
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return {} as T;
+  }
+
+  const text = await response.text();
+  if (!text || text.trim() === '') {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text as unknown as T;
+  }
 }
