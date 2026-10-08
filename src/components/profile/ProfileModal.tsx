@@ -139,7 +139,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         // Kirim OTP ke nomor baru
         await sendOtpToPhone(phone.trim(), generatedCode, name.trim(), 'change_phone');
 
-        setToastMessage(`Kode OTP untuk nomor baru ${phone} adalah: ${generatedCode}`);
+        setToastMessage(`Kode verifikasi OTP telah dikirimkan melalui WhatsApp ke nomor ${phone}`);
         setTimeout(() => setToastMessage(null), 10000);
 
         setMode('otp_verify');
@@ -253,7 +253,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       setOtp(['', '', '', '', '', '']);
 
       await sendOtpToPhone(targetNewPhone, generatedCode, name.trim(), 'change_phone');
-      setToastMessage(`Kode OTP baru untuk ${targetNewPhone} adalah: ${generatedCode}`);
+      setToastMessage(`Kode verifikasi OTP baru telah dikirimkan melalui WhatsApp ke nomor ${targetNewPhone}`);
       setTimeout(() => setToastMessage(null), 10000);
     } catch (err: any) {
       setError(err?.message || 'Gagal mengirim ulang kode OTP.');
@@ -684,7 +684,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               ))}
             </div>
 
-            {/* Autofill Demo Banner */}
             <div
               style={{
                 backgroundColor: '#f8fafc',
@@ -693,33 +692,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 padding: '10px 14px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '12.5px',
+                gap: '8px',
+                fontSize: '12px',
+                color: '#475569',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#006948', fontWeight: 600 }}>
-                <GoogleIcon name="verified" size={16} color="#006948" />
-                <span>Kode OTP: <strong>{activeOtpCode}</strong></span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setOtp(activeOtpCode.split(''));
-                  handleVerifyPhoneOtp(activeOtpCode);
-                }}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '8px',
-                  backgroundColor: '#006948',
-                  color: '#ffffff',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Isi Otomatis
-              </button>
+              <GoogleIcon name="chat" size={16} color="#25D366" />
+              <span>Kode OTP 6-digit telah dikirimkan ke nomor WhatsApp baru Anda. Masukkan kode di atas untuk verifikasi.</span>
             </div>
 
             {/* Action Buttons */}

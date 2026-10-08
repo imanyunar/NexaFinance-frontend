@@ -212,11 +212,6 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
-  const handleAutoFillDemoOtp = () => {
-    const code = activeOtpCode;
-    setOtp(code.split(''));
-    verifyAndRegister(code);
-  };
 
 
   return (
@@ -504,19 +499,9 @@ export const RegisterPage: React.FC = () => {
                 ))}
               </div>
 
-              {/* Demo Helper Banner with Instant 1-Click Fill */}
-              <div className="w-full p-space-sm rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 flex items-center justify-between text-body-sm">
-                <div className="flex items-center gap-1.5 text-[#00873c] font-badge-label text-badge-label">
-                  <span className="material-symbols-outlined text-[16px]">chat</span>
-                  <span>Kode OTP WhatsApp: <strong>{activeOtpCode}</strong></span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAutoFillDemoOtp}
-                  className="px-2.5 py-1 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-badge-label text-badge-label font-semibold shadow-xs transition-colors"
-                >
-                  Isi Otomatis
-                </button>
+              <div className="w-full p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/60 flex items-center gap-2 text-body-sm text-on-surface-variant">
+                <span className="material-symbols-outlined text-[18px] text-[#25D366]">chat</span>
+                <span>Kode verifikasi 6-digit telah dikirimkan ke WhatsApp Anda. Masukkan kode di atas untuk verifikasi.</span>
               </div>
 
               {/* Submit Verification Button */}
