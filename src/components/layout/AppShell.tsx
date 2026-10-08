@@ -271,9 +271,8 @@ export const AppShell: React.FC = () => {
           {/* Developer Attribution */}
           <div className="pt-0.5 text-center">
             <p className="font-label-caps text-label-caps text-outline text-[11px] flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-[13px] text-primary">code</span>
-              <span>Developed by</span>
-              <span className="font-semibold text-on-surface">Nexa Digital Agency</span>
+              <span className="material-symbols-outlined text-[13px] text-primary">security</span>
+              <span>NexaFinance Enterprise Treasury</span>
             </p>
           </div>
         </div>
@@ -369,10 +368,10 @@ export const AppShell: React.FC = () => {
               className="flex items-center gap-space-xs p-1 sm:px-space-sm sm:py-1 rounded-full border border-outline-variant hover:bg-surface-container-high transition-colors text-left"
             >
               <div className="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs shrink-0">
-                {user?.name?.slice(0, 2).toUpperCase() || 'IA'}
+                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'}
               </div>
               <span className="hidden md:inline font-body-sm text-body-sm font-semibold text-on-surface max-w-[100px] truncate">
-                {user?.name || 'Iman Azizi'}
+                {user?.name || 'Pengguna'}
               </span>
               <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
             </button>

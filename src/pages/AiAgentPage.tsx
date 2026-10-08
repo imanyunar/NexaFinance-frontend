@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace, Account } from '../context/WorkspaceContext';
+import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
 import { Modal } from '../components/ui';
 
@@ -29,6 +30,7 @@ interface Message {
 }
 
 export const AiAgentPage: React.FC = () => {
+  const { user } = useAuth();
   const {
     activeWorkspace,
     accounts,
@@ -38,15 +40,40 @@ export const AiAgentPage: React.FC = () => {
     createTransaction,
   } = useWorkspace();
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome-1',
-      role: 'agent',
-      content:
-        'Halo Mas **Iman Azizi**! Saya asisten finansial otonom NexaFinance. Seluruh data rekening BCA Operasional, Mandiri Payroll, serta alokasi anggaran Q2 sudah tersinkronisasi realtime.\n\nSaya siap memproses perintah mutasi instan, pencatatan nota OCR, atau analisis burn rate Nexa Digital Agency. Apa yang ingin kita eksekusi hari ini?',
-      timestamp: '09:14 WIB',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [learnedRules, setLearnedRules] = useState<LearnedMemory[]>([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
+
+  useEffect(() => {
+    const accNames = accounts.length > 0 ? ` (${accounts.map((a) => a.name).join(', ')})` : '';
+    setMessages([
+      {
+        id: 'welcome-1',
+        role: 'agent',
+        content: `Halo${user?.name ? ` **${user.name}**` : ''}! Saya asisten finansial cerdas NexaFinance. Seluruh data rekening${accNames} serta anggaran workspace ${activeWorkspace?.name || ''} sudah tersinkronisasi realtime.\n\nSaya siap memproses perintah mutasi instan, pencatatan nota OCR, atau analisis arus kas bisnis. Apa yang ingin kita eksekusi hari ini?`,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+      },
+    ]);
+  }, [user?.name, accounts, activeWorkspace?.name]);
+
+  const fetchMemories = async () => {
+    if (!activeWorkspace?.id) return;
+    try {
+      setLoadingMemories(true);
+      const res = await apiFetch(`/api/workspaces/${activeWorkspace.id}/ai/memories`);
+      if (res?.memories && Array.isArray(res.memories)) {
+        setLearnedRules(res.memories);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMemories(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMemories();
+  }, [activeWorkspace?.id]);
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,6 +100,45 @@ export const AiAgentPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
+
+  const handleSaveRule = async () => {
+    if (!newRuleTitle.trim() || !newRuleFact.trim()) {
+      alert('Lengkapi judul dan kaidah aturan');
+      return;
+    }
+    try {
+      if (activeWorkspace?.id) {
+        await apiFetch(`/api/workspaces/${activeWorkspace.id}/ai/memories`, {
+          method: 'POST',
+          body: JSON.stringify({
+            title: newRuleTitle.trim(),
+            fact: newRuleFact.trim(),
+            category: 'FINANCIAL_RULE',
+          }),
+        });
+        await fetchMemories();
+      }
+      setNewRuleTitle('');
+      setNewRuleFact('');
+      setShowMemoryModal(false);
+    } catch (err: any) {
+      alert('Gagal menyimpan aturan: ' + err.message);
+    }
+  };
+
+  const handleDeleteRule = async (ruleId: string) => {
+    if (!confirm('Hapus aturan Continuous Memory ini?')) return;
+    try {
+      if (activeWorkspace?.id) {
+        await apiFetch(`/api/workspaces/${activeWorkspace.id}/ai/memories?id=${ruleId}`, {
+          method: 'DELETE',
+        });
+        await fetchMemories();
+      }
+    } catch (err: any) {
+      alert('Gagal menghapus aturan: ' + err.message);
+    }
+  };
 
   // Client-side quick parser
   const parseLocalTransaction = (text: string) => {
@@ -409,7 +475,7 @@ export const AiAgentPage: React.FC = () => {
                     <div className="flex flex-col items-end max-w-lg">
                       <div className="flex items-center gap-space-xs mb-1">
                         <span className="font-label-caps text-label-caps text-outline">{msg.timestamp}</span>
-                        <span className="font-body-sm text-body-sm font-semibold text-on-surface">Iman Azizi</span>
+                        <span className="font-body-sm text-body-sm font-semibold text-on-surface">{user?.name || 'Pengguna'}</span>
                       </div>
                       <div className="bg-primary text-on-primary p-space-md rounded-xl font-body-md text-body-md shadow-xs leading-relaxed">
                         {msg.content}
@@ -420,7 +486,7 @@ export const AiAgentPage: React.FC = () => {
                       </span>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs shrink-0 mt-1">
-                      IA
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'}
                     </div>
                   </div>
                 );
@@ -446,11 +512,11 @@ export const AiAgentPage: React.FC = () => {
                         <div className="flex flex-wrap gap-space-xs mt-space-md pt-space-xs border-t border-surface-container-high/60">
                           <button
                             type="button"
-                            onClick={() => handleSend('Cek runway kas agency saat ini')}
+                            onClick={() => handleSend('Cek runway kas bisnis saat ini')}
                             className="px-space-sm py-1 rounded-lg bg-surface-container-lowest text-secondary font-body-sm text-body-sm hover:bg-secondary-fixed transition-colors flex items-center gap-1 shadow-xs border border-outline-variant"
                           >
                             <span className="material-symbols-outlined text-[15px]">trending_up</span>
-                            <span>"Cek runway kas agency saat ini"</span>
+                            <span>"Cek runway kas bisnis saat ini"</span>
                           </button>
                           <button
                             type="button"
@@ -637,65 +703,51 @@ export const AiAgentPage: React.FC = () => {
               Nexa Agent mempelajari preferensi bisnis spesifik Anda dan menerapkannya otomatis pada pencatatan harian.
             </p>
 
-            {/* Rule 1 */}
-            <div className="bg-surface-container-low/70 p-space-md rounded-xl border border-outline-variant/50 flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-label-caps text-label-caps uppercase text-secondary font-bold">
-                  RULE #01 Persetujuan Petty Cash
-                </span>
-                <span className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
+            {loadingMemories ? (
+              <div className="p-space-md text-center text-outline text-body-sm">
+                Memuat Continuous Memory...
               </div>
-              <p className="text-body-sm text-on-surface text-[13px] leading-relaxed">
-                Batas approval petty cash di atas <strong>Rp 500.000</strong> wajib memerlukan konfirmasi Telegram/WhatsApp Iman Azizi sebelum posting.
-              </p>
-              <div className="flex items-center justify-between text-[11px] text-outline pt-1 border-t border-surface-container-high/60 mt-1">
-                <span>Sumber: WhatsApp Bot Learning</span>
-                <span className="font-semibold text-tertiary">Akurasi: 99.4%</span>
+            ) : learnedRules.length === 0 ? (
+              <div className="p-space-md text-center text-outline text-body-sm bg-surface-container-low/40 rounded-xl border border-outline-variant/40">
+                Belum ada aturan Continuous Memory kustom. Klik "Aturan Baru" di atas untuk mengajarkan aturan atau preferensi pencatatan kas kepada AI.
               </div>
-            </div>
+            ) : (
+              learnedRules.map((rule, idx) => (
+                <div key={rule.id} className="bg-surface-container-low/70 p-space-md rounded-xl border border-outline-variant/50 flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-caps text-label-caps uppercase text-secondary font-bold">
+                      RULE #{String(idx + 1).padStart(2, '0')} {rule.title}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRule(rule.id)}
+                      className="text-outline hover:text-error p-0.5 rounded transition-colors"
+                      title="Hapus aturan"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
+                  <p className="text-body-sm text-on-surface text-[13px] leading-relaxed">
+                    {rule.fact}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-outline pt-1 border-t border-surface-container-high/60 mt-1">
+                    <span>Kategori: {rule.category}</span>
+                    <span className="font-semibold text-tertiary">Aktif di AI Engine</span>
+                  </div>
+                </div>
+              ))
+            )}
 
-            {/* Rule 2 */}
-            <div className="bg-surface-container-low/70 p-space-md rounded-xl border border-outline-variant/50 flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-label-caps text-label-caps uppercase text-primary font-bold">
-                  RULE #02 Cadangan Kas Pajak 10%
-                </span>
-                <span className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
-              </div>
-              <p className="text-body-sm text-on-surface text-[13px] leading-relaxed">
-                Setiap kali ada invoice proyek masuk di atas <strong>Rp 20.000.000</strong>, alokasikan otomatis <strong>10%</strong> ke rekening simpanan pajak badan.
-              </p>
-              <div className="flex items-center justify-between text-[11px] text-outline pt-1 border-t border-surface-container-high/60 mt-1">
-                <span>Diperbarui: 12 April 2025</span>
-                <span>Pemberlakuan: Mandiri Payroll</span>
-              </div>
-            </div>
-
-            {/* Rule 3 */}
-            <div className="bg-surface-container-low/70 p-space-md rounded-xl border border-outline-variant/50 flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-label-caps text-label-caps uppercase text-secondary font-bold">
-                  RULE #03 Mapping Kategori SaaS
-                </span>
-                <span className="material-symbols-outlined text-tertiary text-[18px]">check_circle</span>
-              </div>
-              <p className="text-body-sm text-on-surface text-[13px] leading-relaxed">
-                Semua mutasi vendor <em>Figma, Vercel, OpenAI, AWS, Google Workspace</em> otomatis dimasukkan ke pos beban <strong>SaaS &amp; Software Tools</strong>.
-              </p>
-              <div className="flex items-center justify-between text-[11px] text-outline pt-1 border-t border-surface-container-high/60 mt-1">
-                <span>Auto-Categorization</span>
-                <span className="font-semibold text-tertiary">100% Match Rate</span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowMemoryModal(true)}
-              className="text-center font-body-sm text-primary font-semibold hover:underline flex items-center justify-center gap-1 pt-1"
-            >
-              <span>Buka Seluruh 14 Aturan Pembelajaran Agent</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
+            {learnedRules.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowMemoryModal(true)}
+                className="text-center font-body-sm text-primary font-semibold hover:underline flex items-center justify-center gap-1 pt-1"
+              >
+                <span>+ Tambah Aturan Pembelajaran Baru</span>
+                <span className="material-symbols-outlined text-[16px]">add_circle</span>
+              </button>
+            )}
           </div>
 
           {/* Box 2: Economic Web Crawler */}
@@ -763,7 +815,7 @@ export const AiAgentPage: React.FC = () => {
                 BI Pertahankan Suku Bunga Acuan di 6.00% untuk Jaga Stabilitas Rupiah
               </h4>
               <p className="text-[12px] text-on-surface-variant bg-surface-container-lowest p-2 rounded border border-outline-variant/60">
-                <strong className="text-primary">Dampak Agency:</strong> Beban kredit ekspansi stabil. Rekomendasi: Pertahankan cadangan kas darurat setara 4 bulan operasional.
+                <strong className="text-primary">Dampak Bisnis:</strong> Beban kredit ekspansi stabil. Rekomendasi: Pertahankan cadangan kas darurat setara 4 bulan operasional.
               </p>
             </div>
 
@@ -777,7 +829,7 @@ export const AiAgentPage: React.FC = () => {
                 Penguatan Dolar AS Berpotensi Naikkan Biaya Langganan Server Cloud &amp; Alat Desain
               </h4>
               <p className="text-[12px] text-on-surface-variant bg-surface-container-lowest p-2 rounded border border-outline-variant/60">
-                <strong className="text-error">Dampak Agency:</strong> Biaya Figma &amp; AWS naik ~3–5% dalam Rupiah. AI merekomendasikan pembayaran tahunan di muka sebelum kuartal berakhir.
+                <strong className="text-error">Dampak Bisnis:</strong> Biaya Figma &amp; AWS naik ~3–5% dalam Rupiah. AI merekomendasikan pembayaran tahunan di muka sebelum kuartal berakhir.
               </p>
             </div>
 
@@ -791,7 +843,7 @@ export const AiAgentPage: React.FC = () => {
                 Pembaruan Coretax &amp; Insentif Pajak PPh Final UMKM 0.5% Berjalan Tertib
               </h4>
               <p className="text-[12px] text-on-surface-variant bg-surface-container-lowest p-2 rounded border border-outline-variant/60">
-                <strong className="text-primary">Dampak Agency:</strong> Sinkronisasi e-Faktur otomatis terkonfigurasi. Penghitungan potongan PPh 23 dari klien berjalan tanpa koreksi.
+                <strong className="text-primary">Dampak Bisnis:</strong> Sinkronisasi e-Faktur otomatis terkonfigurasi. Penghitungan potongan PPh 23 dari klien berjalan tanpa koreksi.
               </p>
             </div>
 
@@ -858,16 +910,7 @@ export const AiAgentPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (!newRuleTitle.trim() || !newRuleFact.trim()) {
-                  alert('Lengkapi judul dan kaidah aturan');
-                  return;
-                }
-                alert(`Aturan "${newRuleTitle}" berhasil ditambahkan ke Continuous Memory!`);
-                setNewRuleTitle('');
-                setNewRuleFact('');
-                setShowMemoryModal(false);
-              }}
+              onClick={handleSaveRule}
               className="inline-flex items-center gap-space-xs px-space-lg py-space-xs bg-primary hover:bg-primary-container text-on-primary font-body-md font-semibold rounded-lg shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">check</span>

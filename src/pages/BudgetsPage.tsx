@@ -348,12 +348,12 @@ export const BudgetsPage: React.FC = () => {
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Tersedia untuk 7 hari ke depan
+              Sisa alokasi periode berjalan
             </p>
           </div>
           <div className="pt-space-xs flex items-center gap-space-xs text-tertiary text-[12px] font-semibold">
             <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            <span>Cashflow Sehat</span>
+            <span>{remainingBudget > 0 ? 'Pagu Aman Tersedia' : 'Pagu Terpenuhi'}</span>
           </div>
         </div>
 

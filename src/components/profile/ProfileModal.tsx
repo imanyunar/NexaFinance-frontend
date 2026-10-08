@@ -22,7 +22,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
   // OTP Verification for Phone Change
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
-  const [activeOtpCode, setActiveOtpCode] = useState<string>('749215');
+  const [activeOtpCode, setActiveOtpCode] = useState<string>('');
   const [targetNewPhone, setTargetNewPhone] = useState<string>('');
   const [countdown, setCountdown] = useState<number>(45);
   const [canResend, setCanResend] = useState<boolean>(false);
@@ -216,7 +216,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       return;
     }
 
-    if (entered !== activeOtpCode && entered !== '749215' && entered !== '123456') {
+    if (entered !== activeOtpCode) {
       setError('Kode OTP salah atau kedaluwarsa. Silakan periksa kembali.');
       return;
     }
@@ -425,7 +425,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                   {user?.name || name || 'Pengguna Nexa'}
                 </div>
                 <div style={{ fontSize: '13px', color: '#666666' }}>
-                  {user?.email || email || 'user@nexafinance.com'}
+                  {user?.email || email || '-'}
                 </div>
                 <div
                   style={{
@@ -569,7 +569,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="081234567890"
+                placeholder="0812xxxxxxxx"
                 style={{
                   width: '100%',
                   padding: '9px 12px',

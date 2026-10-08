@@ -19,7 +19,7 @@ export const RegisterPage: React.FC = () => {
 
   // OTP State (6 Digits)
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
-  const [activeOtpCode, setActiveOtpCode] = useState<string>('749215');
+  const [activeOtpCode, setActiveOtpCode] = useState<string>('');
   const [countdown, setCountdown] = useState<number>(45);
   const [canResend, setCanResend] = useState<boolean>(false);
   const [notificationToast, setNotificationToast] = useState<{ title: string; body: string; channel: 'wa' | 'email' } | null>(null);
@@ -197,7 +197,7 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      if (enteredCode !== activeOtpCode && enteredCode !== '749215' && enteredCode !== '123456') {
+      if (enteredCode !== activeOtpCode) {
         setError('Kode OTP tidak valid atau telah kedaluwarsa. Silakan periksa kembali.');
         setLoading(false);
         return;
@@ -545,7 +545,7 @@ export const RegisterPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="mt-space-lg text-center text-[12px] text-outline">
-        <p>&copy; 2026 NexaFinance — Next-Gen SME Treasury Platform. Dikembangkan oleh <strong>Nexa Digital Agency</strong>.</p>
+        <p>&copy; 2026 NexaFinance — Next-Gen SME Treasury Platform.</p>
       </footer>
     </div>
   );

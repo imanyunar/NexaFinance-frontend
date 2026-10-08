@@ -453,13 +453,14 @@ export const AccountsPage: React.FC = () => {
                 {/* Details Meta */}
                 <div className="flex flex-col gap-space-xs text-body-sm font-body-sm pt-space-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-on-surface-variant font-medium">Nomor Identitas:</span>
+                    <span className="text-on-surface-variant font-medium">ID Rekening:</span>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard('082-991-2301')}
+                      onClick={() => copyToClipboard(acc.id)}
                       className="inline-flex items-center gap-1 font-mono text-[12px] text-on-surface hover:text-primary transition-colors font-semibold"
+                      title="Salin ID Rekening"
                     >
-                      <span>082-991-2301</span>
+                      <span>#{acc.id.slice(0, 8).toUpperCase()}</span>
                       <span className="material-symbols-outlined text-[14px] text-outline">content_copy</span>
                     </button>
                   </div>
@@ -470,8 +471,11 @@ export const AccountsPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-on-surface-variant font-medium">Terakhir Sinkron:</span>
-                    <span className="text-outline text-[12px]">Hari ini, 15:42 WIB</span>
+                    <span className="text-on-surface-variant font-medium">Status Koneksi:</span>
+                    <span className="text-tertiary text-[12px] font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary live-dot"></span>
+                      <span>Tersinkronisasi</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -479,7 +483,7 @@ export const AccountsPage: React.FC = () => {
               {/* Card Footer Actions */}
               <div className="px-space-lg py-space-sm bg-surface-container-low/40 border-t border-surface-container-high/80 flex items-center justify-between text-on-surface-variant">
                 <span className="font-label-caps text-label-caps uppercase text-outline font-semibold">
-                  {isArchived ? 'HISTORICAL LEDGER READ-ONLY' : isBank ? 'AUTO-RECONCILED' : isEWallet ? 'PAYOUT H+1 MANDIRI' : 'MAX PLAFON: RP 10.000.000'}
+                  {isArchived ? 'HISTORICAL LEDGER READ-ONLY' : isBank ? 'AUTO-RECONCILED' : isEWallet ? 'DIGITAL WALLET' : 'PETTY CASH LEDGER'}
                 </span>
                 <div className="flex items-center gap-1">
                   {isArchived ? (

@@ -32,10 +32,10 @@ export const TransactionsPage: React.FC = () => {
     });
 
     return {
-      totalInflow: inflow || 128450000,
-      totalOutflow: outflow || 54320500,
-      totalTransfer: transfer || 18500000,
-      netCashFlow: (inflow - outflow) || 74129500,
+      totalInflow: inflow,
+      totalOutflow: outflow,
+      totalTransfer: transfer,
+      netCashFlow: inflow - outflow,
     };
   }, [transactions]);
 
@@ -148,12 +148,12 @@ export const TransactionsPage: React.FC = () => {
   const formatDateTime = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return { date: '24 Okt 2026', time: '14:15 WIB' };
+      if (isNaN(d.getTime())) return { date: '-', time: '-' };
       const date = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       const time = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
       return { date, time };
     } catch {
-      return { date: '24 Okt 2026', time: '14:15 WIB' };
+      return { date: '-', time: '-' };
     }
   };
 
@@ -221,9 +221,8 @@ export const TransactionsPage: React.FC = () => {
           <div className="font-title-balance text-title-balance text-on-surface font-bold tabular-nums">
             {formatRupiah(totalInflow)}
           </div>
-          <div className="flex items-center gap-space-2xs font-numeric-table text-numeric-table text-tertiary font-semibold">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span>
-            <span>+14.8% vs bulan lalu</span>
+          <div className="flex items-center gap-space-2xs font-numeric-table text-numeric-table text-on-surface-variant font-medium">
+            <span>{counts.in} mutasi masuk tercatat</span>
           </div>
         </div>
 
@@ -276,9 +275,13 @@ export const TransactionsPage: React.FC = () => {
           <div className={`font-title-balance text-title-balance font-bold tabular-nums ${netCashFlow >= 0 ? 'text-tertiary' : 'text-error'}`}>
             {netCashFlow >= 0 ? `+${formatRupiah(netCashFlow)}` : formatRupiah(netCashFlow)}
           </div>
-          <div className="flex items-center gap-space-2xs font-numeric-table text-numeric-table text-tertiary font-semibold">
-            <span className="material-symbols-outlined text-[14px]">check_circle</span>
-            <span>Surplus Operasional</span>
+          <div className="flex items-center gap-space-2xs font-numeric-table text-numeric-table font-semibold">
+            <span className={`material-symbols-outlined text-[14px] ${netCashFlow >= 0 ? 'text-tertiary' : 'text-error'}`}>
+              {netCashFlow >= 0 ? 'check_circle' : 'warning'}
+            </span>
+            <span className={netCashFlow >= 0 ? 'text-tertiary' : 'text-error'}>
+              {netCashFlow > 0 ? 'Surplus Operasional' : netCashFlow < 0 ? 'Defisit Arus Kas' : 'Arus Kas Seimbang'}
+            </span>
           </div>
         </div>
       </div>

@@ -219,12 +219,14 @@ export const DashboardPage: React.FC = () => {
               {netCashFlow >= 0 ? `+${formatRupiah(netCashFlow)}` : formatRupiah(netCashFlow)}
             </span>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Surplus Operasional Bersih
+              {netCashFlow > 0 ? 'Surplus Operasional Bersih' : netCashFlow < 0 ? 'Defisit Arus Kas' : 'Arus Kas Seimbang'}
             </p>
           </div>
-          <div className="pt-space-xs flex items-center gap-1 text-[12px] text-tertiary font-semibold">
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            <span>Likuiditas Sangat Sehat</span>
+          <div className={`pt-space-xs flex items-center gap-1 text-[12px] font-semibold ${netCashFlow >= 0 ? 'text-tertiary' : 'text-error'}`}>
+            <span className="material-symbols-outlined text-[16px]">
+              {netCashFlow >= 0 ? 'check_circle' : 'warning'}
+            </span>
+            <span>{netCashFlow > 0 ? 'Likuiditas Sehat' : netCashFlow < 0 ? 'Pengawasan Pagu Aktif' : 'Belum Ada Mutasi'}</span>
           </div>
         </div>
       </div>
@@ -463,7 +465,7 @@ export const DashboardPage: React.FC = () => {
                 Contoh Perintah WhatsApp:
               </p>
               <p className="font-mono text-[12px] text-on-surface bg-surface-container-low p-2 rounded">
-                "Beli token listrik kantor 200rb pakai BCA Operasional"
+                {`"Beli token listrik 200rb pakai ${accounts[0]?.name || 'Kas'}"`}
               </p>
             </div>
           </div>
