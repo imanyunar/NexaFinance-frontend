@@ -12,7 +12,7 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: (reason?: string | React.MouseEvent) => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Pure in-memory user state. No tokens are ever stored in localStorage!
+  // Pure in-memory user state. No access tokens stored in localStorage!
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -42,15 +42,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 1. Mark explicit logout flag so subsequent link clicks or tabs NEVER auto-login
       try {
         localStorage.setItem('nexa_explicit_logged_out', 'true');
-      } catch {}
-      try {
+        localStorage.removeItem('nexa_last_activity');
         sessionStorage.clear();
       } catch {}
 
       // 2. Clear client-accessible cookies
       try {
         const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
-        ['better-auth.session_token', '__Secure-better-auth.session_token', 'better-auth.session_data', '__Secure-better-auth.session_data'].forEach((c) => {
+        [
+          'better-auth.session_token',
+          '__Secure-better-auth.session_token',
+          'better-auth.session_data',
+          '__Secure-better-auth.session_data',
+          'better-auth.dont_remember',
+          '__Secure-better-auth.dont_remember',
+          'better-auth.account_data',
+          '__Secure-better-auth.account_data',
+        ].forEach((c) => {
           document.cookie = `${c}=; expires=${past}; path=/; SameSite=None; Secure`;
           document.cookie = `${c}=; expires=${past}; path=/;`;
         });
@@ -83,23 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Bank-Grade Check 2: Cek apakah ini sesi browser baru (misal laptop baru dinyalakan / browser baru dibuka)
-      const isSessionActive = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nexa_session_active');
-      const lastActivity = Number((typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nexa_last_activity')) || '0');
-
-      if (!isSessionActive) {
-        // Laptop baru menyala atau browser baru dibuka -> Otomatis logout demi keamanan bank
-        try {
-          await apiFetch('/auth/sign-out', {
-            method: 'POST',
-            body: JSON.stringify({}),
-          });
-        } catch {}
-        setUser(null);
-        return;
-      }
-
-      // Bank-Grade Check 3: Cek apakah melebihi idle timeout 15 menit
+      // Bank-Grade Check 2: Cek apakah melebihi idle timeout 15 menit
+      const lastActivity = Number((typeof localStorage !== 'undefined' && localStorage.getItem('nexa_last_activity')) || '0');
       if (lastActivity && Date.now() - lastActivity > IDLE_TIMEOUT_MS) {
         await logout('Sesi Anda telah kedaluwarsa demi keamanan perbankan (tidak ada aktivitas selama 15 menit). Silakan login kembali.');
         return;
@@ -109,16 +102,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await apiFetch('/auth/get-session');
       if (res?.user) {
         setUser(res.user);
-        sessionStorage.setItem('nexa_last_activity', String(Date.now()));
+        try {
+          localStorage.setItem('nexa_last_activity', String(Date.now()));
+          sessionStorage.setItem('nexa_session_active', 'true');
+        } catch {}
       } else {
         setUser(null);
-        sessionStorage.removeItem('nexa_session_active');
-        sessionStorage.removeItem('nexa_last_activity');
+        try {
+          localStorage.removeItem('nexa_last_activity');
+          sessionStorage.removeItem('nexa_session_active');
+        } catch {}
       }
     } catch {
       setUser(null);
-      sessionStorage.removeItem('nexa_session_active');
-      sessionStorage.removeItem('nexa_last_activity');
+      try {
+        localStorage.removeItem('nexa_last_activity');
+        sessionStorage.removeItem('nexa_session_active');
+      } catch {}
     } finally {
       setLoading(false);
     }
@@ -128,19 +128,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshSession();
   }, [refreshSession]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     setLoading(true);
     try {
       const data = await apiFetch('/auth/sign-in/email', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       // Clear explicit logout flag upon genuine user authentication
       try {
         localStorage.removeItem('nexa_explicit_logged_out');
         sessionStorage.setItem('nexa_session_active', 'true');
-        sessionStorage.setItem('nexa_last_activity', String(Date.now()));
+        localStorage.setItem('nexa_last_activity', String(Date.now()));
       } catch {}
 
       if (data?.user) {
@@ -153,14 +153,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Inactivity / Idle Watcher (15 minutes)
+  // Inactivity / Idle Watcher (15 minutes across any tab)
   useEffect(() => {
     if (!user) return;
 
     let throttleTimer: any = null;
     const handleUserActivity = () => {
       if (!throttleTimer) {
-        sessionStorage.setItem('nexa_last_activity', String(Date.now()));
+        try {
+          localStorage.setItem('nexa_last_activity', String(Date.now()));
+        } catch {}
         throttleTimer = setTimeout(() => {
           throttleTimer = null;
         }, 5000); // Throttle pembaruan waktu tiap 5 detik
@@ -172,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Cek timeout idle setiap 15 detik
     const interval = setInterval(() => {
-      const lastActive = Number(sessionStorage.getItem('nexa_last_activity') || '0');
+      const lastActive = Number(localStorage.getItem('nexa_last_activity') || '0');
       if (lastActive && Date.now() - lastActive > IDLE_TIMEOUT_MS) {
         clearInterval(interval);
         logout('Sesi Anda telah berakhir secara otomatis demi keamanan perbankan (tidak ada aktivitas selama 15 menit). Silakan login kembali.');
