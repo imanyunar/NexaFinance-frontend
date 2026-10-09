@@ -254,14 +254,14 @@ export const RegisterPage: React.FC = () => {
       )}
 
       {/* Brand Header */}
-      <div className="flex items-center gap-space-sm mb-space-lg relative z-10">
-        <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-xl shadow-sm">
+      <Link to="/" className="flex items-center gap-space-sm mb-space-lg relative z-10 group hover:opacity-90 transition-opacity">
+        <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-xl shadow-sm group-hover:scale-105 transition-transform">
           N
         </div>
         <span className="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">
-          NexaFinance
+          Nexa<span className="text-primary">Finance</span>
         </span>
-      </div>
+      </Link>
 
       {/* Main Register Card */}
       <div className="w-full max-w-lg bg-surface-container-lowest rounded-2xl p-space-xl md:p-space-2xl border border-outline-variant/60 shadow-lg relative z-10 flex flex-col gap-space-lg">

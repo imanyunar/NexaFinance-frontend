@@ -6,6 +6,7 @@ import { AppShell } from './components/layout/AppShell';
 import { Skeleton } from './components/ui/Skeleton';
 
 // Route-based code splitting for maximum Lighthouse Performance
+const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const TransactionsPage = lazy(() => import('./pages/TransactionsPage').then((m) => ({ default: m.TransactionsPage })));
 const BudgetsPage = lazy(() => import('./pages/BudgetsPage').then((m) => ({ default: m.BudgetsPage })));
@@ -28,6 +29,22 @@ const PageFallback: React.FC = () => (
   </div>
 );
 
+const RootRoute: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <PageFallback />;
+  }
+
+  // Jika sudah login, langsung ke dashboard
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Jika belum login, tampilkan Landing Page publik yang megah
+  return <LandingPage />;
+};
+
 const ProtectedLayout: React.FC = () => {
   const { user, loading } = useAuth();
 
@@ -40,15 +57,15 @@ const ProtectedLayout: React.FC = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#f8fafd',
+          background: '#faf8ff',
           gap: '12px',
         }}
       >
         <div
           style={{
-            width: '36px',
-            height: '36px',
-            background: 'linear-gradient(135deg, #187aba, #003061)',
+            width: '40px',
+            height: '40px',
+            background: '#006948',
             borderRadius: '10px',
             display: 'flex',
             alignItems: 'center',
@@ -60,7 +77,7 @@ const ProtectedLayout: React.FC = () => {
         >
           N
         </div>
-        <div style={{ color: '#002244', fontWeight: 600, fontSize: '14px' }}>
+        <div style={{ color: '#171b26', fontWeight: 600, fontSize: '14px' }}>
           Memuat sesi NexaFinance...
         </div>
       </div>
@@ -84,16 +101,27 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <Suspense fallback={<PageFallback />}>
           <Routes>
+            {/* Root Route: Landing Page jika tamu, Dashboard jika login */}
+            <Route path="/" element={<RootRoute />} />
+
+            {/* Landing Page eksplisit (selalu bisa diakses siapapun) */}
+            <Route path="/landing" element={<LandingPage />} />
+
+            {/* Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* Protected Dashboard & App Routes */}
             <Route element={<ProtectedLayout />}>
-              <Route path="/" element={<DashboardPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/budgets" element={<BudgetsPage />} />
               <Route path="/accounts" element={<AccountsPage />} />
               <Route path="/ai" element={<AiAgentPage />} />
               <Route path="/agent" element={<AiAgentPage />} />
             </Route>
+
+            {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

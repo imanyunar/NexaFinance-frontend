@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProfileModal } from '../profile/ProfileModal';
@@ -94,7 +94,7 @@ export const AppShell: React.FC = () => {
   };
 
   const navItems = [
-    { to: '/', label: 'Dashboard', icon: 'dashboard' },
+    { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
     { to: '/transactions', label: 'Buku Transaksi', icon: 'receipt_long' },
     { to: '/budgets', label: 'Pagu Anggaran', icon: 'shield' },
     { to: '/accounts', label: 'Kas & Dompet Bisnis', icon: 'account_balance_wallet' },
@@ -114,7 +114,7 @@ export const AppShell: React.FC = () => {
         <div className="flex flex-col flex-1 min-h-0">
           {/* Logo Brand Header */}
           <div className="h-16 px-space-lg flex items-center justify-between border-b border-surface-container-high/60">
-            <NavLink to="/" className="flex items-center gap-space-sm text-decoration-none">
+            <NavLink to="/dashboard" className="flex items-center gap-space-sm text-decoration-none">
               <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold text-lg shadow-sm">
                 N
               </div>
@@ -174,7 +174,7 @@ export const AppShell: React.FC = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.to === '/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center gap-space-md px-space-md py-space-sm rounded-xl transition-all group ${
                     isActive
@@ -390,6 +390,13 @@ export const AppShell: React.FC = () => {
                   <span className="material-symbols-outlined text-[18px] text-primary">person</span>
                   <span>Profil Pengguna</span>
                 </button>
+                <Link
+                  to="/landing"
+                  className="w-full flex items-center gap-space-sm px-space-md py-space-xs rounded-lg hover:bg-surface-container text-on-surface text-body-sm font-medium text-left"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-secondary">public</span>
+                  <span>Lihat Landing Page</span>
+                </Link>
                 <div className="my-1 border-t border-surface-container-high"></div>
                 <button
                   type="button"
