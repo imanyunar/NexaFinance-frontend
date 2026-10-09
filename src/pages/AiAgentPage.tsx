@@ -744,7 +744,7 @@ export const AiAgentPage: React.FC = () => {
                 onClick={() => setShowMemoryModal(true)}
                 className="text-center font-body-sm text-primary font-semibold hover:underline flex items-center justify-center gap-1 pt-1"
               >
-                <span>+ Tambah Aturan Pembelajaran Baru</span>
+                <span>Tambah Aturan Pembelajaran Baru</span>
                 <span className="material-symbols-outlined text-[16px]">add_circle</span>
               </button>
             )}

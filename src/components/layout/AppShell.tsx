@@ -357,7 +357,7 @@ export const AppShell: React.FC = () => {
             className="inline-flex items-center gap-space-xs px-space-md py-space-xs bg-primary hover:bg-primary-container text-on-primary text-body-sm font-body-sm font-semibold rounded-lg shadow-sm transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>+ Catat Transaksi</span>
+            <span>Catat Transaksi</span>
           </button>
 
           {/* User Profile Pill */}

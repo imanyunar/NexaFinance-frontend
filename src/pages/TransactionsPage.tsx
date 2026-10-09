@@ -199,7 +199,7 @@ export const TransactionsPage: React.FC = () => {
             className="inline-flex items-center gap-space-xs bg-inverse-surface text-inverse-on-surface hover:bg-on-surface px-space-lg py-space-sm rounded-lg font-body-md text-body-md font-semibold shadow-sm transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>+ Catat Transaksi Instan</span>
+            <span>Catat Transaksi Instan</span>
           </button>
         </div>
       </div>

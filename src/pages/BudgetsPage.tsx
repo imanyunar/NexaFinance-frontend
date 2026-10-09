@@ -217,7 +217,7 @@ export const BudgetsPage: React.FC = () => {
               className="inline-flex items-center gap-space-xs bg-surface-container-lowest text-on-surface hover:bg-surface-container-low px-space-md py-space-sm rounded-lg font-body-md text-body-md font-semibold border border-outline-variant shadow-xs transition-all"
             >
               <span className="material-symbols-outlined text-[18px] text-primary">create_new_folder</span>
-              <span>+ Kategori Baru</span>
+              <span>Kategori Baru</span>
             </button>
             <button
               type="button"
@@ -225,7 +225,7 @@ export const BudgetsPage: React.FC = () => {
               className="inline-flex items-center gap-space-xs bg-primary text-on-primary hover:bg-primary-container px-space-md py-space-sm rounded-lg font-body-md text-body-md font-semibold shadow-xs transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              <span>+ Buat Anggaran Baru</span>
+              <span>Buat Anggaran Baru</span>
             </button>
           </div>
         </div>
